@@ -26,7 +26,7 @@
       color: var(--gray-800);
     }
 
-    /* ─── TOP BAR ─── */
+    /* TOP BAR */
     header {
       background: var(--vgr-blue);
       color: #fff;
@@ -40,31 +40,16 @@
       z-index: 100;
       box-shadow: 0 2px 8px rgba(0,0,0,.25);
     }
-    header .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    header .brand { display: flex; align-items: center; gap: 12px; }
     header .logo {
-      width: 36px;
-      height: 36px;
+      width: 36px; height: 36px;
       background: var(--vgr-teal);
       border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 1rem;
     }
-    header h1 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      letter-spacing: .3px;
-    }
-    header .subtitle {
-      font-size: .75rem;
-      opacity: .7;
-    }
+    header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: .3px; }
+    header .subtitle { font-size: .75rem; opacity: .7; }
     header .source-badge {
       font-size: .7rem;
       background: rgba(255,255,255,.15);
@@ -72,7 +57,7 @@
       border-radius: 20px;
     }
 
-    /* ─── NAV TABS ─── */
+    /* NAV TABS */
     nav {
       background: #fff;
       border-bottom: 2px solid var(--gray-200);
@@ -82,53 +67,30 @@
       padding: 0 2rem;
     }
     nav button {
-      background: none;
-      border: none;
+      background: none; border: none;
       padding: 1rem 1.2rem;
-      font-size: .88rem;
-      font-weight: 600;
+      font-size: .88rem; font-weight: 600;
       color: var(--gray-600);
-      cursor: pointer;
-      white-space: nowrap;
+      cursor: pointer; white-space: nowrap;
       border-bottom: 3px solid transparent;
       transition: color .2s, border-color .2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      display: flex; align-items: center; gap: 6px;
     }
     nav button:hover { color: var(--vgr-blue); }
-    nav button.active {
-      color: var(--vgr-blue);
-      border-bottom-color: var(--vgr-teal);
-    }
+    nav button.active { color: var(--vgr-blue); border-bottom-color: var(--vgr-teal); }
 
-    /* ─── MAIN ─── */
-    main {
-      max-width: 1300px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem;
-    }
+    /* MAIN */
+    main { max-width: 1300px; margin: 0 auto; padding: 2rem 1.5rem; }
 
     .section { display: none; }
     .section.visible { display: block; }
 
-    /* ─── SECTION HEADER ─── */
-    .section-header {
-      margin-bottom: 1.5rem;
-    }
-    .section-header h2 {
-      font-size: 1.6rem;
-      color: var(--vgr-blue);
-      margin-bottom: .25rem;
-    }
-    .section-header p {
-      color: var(--gray-600);
-      font-size: .9rem;
-      max-width: 700px;
-      line-height: 1.55;
-    }
+    /* SECTION HEADER */
+    .section-header { margin-bottom: 1.5rem; }
+    .section-header h2 { font-size: 1.6rem; color: var(--vgr-blue); margin-bottom: .25rem; }
+    .section-header p { color: var(--gray-600); font-size: .9rem; max-width: 700px; line-height: 1.55; }
 
-    /* ─── KPI CARDS ─── */
+    /* KPI CARDS */
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -142,110 +104,244 @@
       box-shadow: 0 1px 4px rgba(0,0,0,.07);
       border-left: 4px solid var(--vgr-teal);
     }
-    .kpi-card .kpi-label {
-      font-size: .76rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: .5px;
-      color: var(--gray-600);
-      margin-bottom: .4rem;
-    }
-    .kpi-card .kpi-value {
-      font-size: 2rem;
-      font-weight: 800;
-      color: var(--vgr-blue);
-      line-height: 1;
-    }
-    .kpi-card .kpi-sub {
-      font-size: .78rem;
-      color: var(--gray-600);
-      margin-top: .3rem;
-    }
+    .kpi-card .kpi-label { font-size: .76rem; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--gray-600); margin-bottom: .4rem; }
+    .kpi-card .kpi-value { font-size: 2rem; font-weight: 800; color: var(--vgr-blue); line-height: 1; }
+    .kpi-card .kpi-sub { font-size: .78rem; color: var(--gray-600); margin-top: .3rem; }
     .kpi-card.accent { border-left-color: var(--vgr-accent); }
     .kpi-card.accent .kpi-value { color: var(--vgr-accent); }
 
-    /* ─── CHART GRID ─── */
-    .chart-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
-      gap: 1.5rem;
-    }
-    .chart-card {
-      background: #fff;
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,.07);
-    }
-    .chart-card.wide {
-      grid-column: 1 / -1;
-    }
-    .chart-card h3 {
-      font-size: .95rem;
-      font-weight: 700;
-      color: var(--vgr-blue);
-      margin-bottom: .25rem;
-    }
-    .chart-card .chart-source {
-      font-size: .72rem;
-      color: var(--gray-600);
-      margin-bottom: 1rem;
-    }
-    .chart-card canvas {
-      max-height: 300px;
-    }
+    /* CHART GRID */
+    .chart-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); gap: 1.5rem; }
+    .chart-card { background: #fff; border-radius: var(--radius); padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+    .chart-card.wide { grid-column: 1 / -1; }
+    .chart-card h3 { font-size: .95rem; font-weight: 700; color: var(--vgr-blue); margin-bottom: .25rem; }
+    .chart-card .chart-source { font-size: .72rem; color: var(--gray-600); margin-bottom: 1rem; }
+    .chart-card canvas { max-height: 300px; }
 
-    /* ─── INFO BOX ─── */
+    /* INFO BOX */
     .info-box {
       background: var(--vgr-light);
       border-left: 4px solid var(--vgr-teal);
       padding: 1rem 1.25rem;
       border-radius: 0 var(--radius) var(--radius) 0;
-      font-size: .875rem;
-      line-height: 1.6;
+      font-size: .875rem; line-height: 1.6;
       margin-bottom: 1.5rem;
     }
     .info-box strong { color: var(--vgr-blue); }
 
-    /* ─── TABLE ─── */
-    .table-wrap {
-      overflow-x: auto;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: .85rem;
-    }
-    th {
-      background: var(--vgr-blue);
-      color: #fff;
-      padding: .6rem .9rem;
-      text-align: left;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    td {
-      padding: .55rem .9rem;
-      border-bottom: 1px solid var(--gray-200);
-    }
+    /* TABLE */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    th { background: var(--vgr-blue); color: #fff; padding: .6rem .9rem; text-align: left; font-weight: 600; white-space: nowrap; }
+    td { padding: .55rem .9rem; border-bottom: 1px solid var(--gray-200); }
     tr:nth-child(even) td { background: var(--gray-100); }
     tr:hover td { background: var(--vgr-light); }
 
-    /* ─── FOOTER ─── */
-    footer {
-      text-align: center;
-      padding: 2rem;
-      font-size: .78rem;
-      color: var(--gray-600);
-      border-top: 1px solid var(--gray-200);
-      margin-top: 3rem;
-    }
+    /* FOOTER */
+    footer { text-align: center; padding: 2rem; font-size: .78rem; color: var(--gray-600); border-top: 1px solid var(--gray-200); margin-top: 3rem; }
 
-    /* ─── LINKS ─── */
+    /* LINKS */
     a { color: var(--vgr-teal); text-decoration: none; font-weight: 500; }
     a:hover { color: var(--vgr-blue); text-decoration: underline; }
-
     pre code { font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; }
 
+    /* KOMMUNER COMPARE */
+    .compare-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    .compare-sidebar {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.25rem;
+      position: sticky;
+      top: 80px;
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+    }
+    .compare-sidebar h4 { font-size: .85rem; font-weight: 700; color: var(--vgr-blue); margin-bottom: .75rem; }
+    .search-input {
+      width: 100%;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: .5rem .75rem;
+      margin-bottom: .75rem;
+      font-size: .85rem;
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--vgr-teal); }
+    .quick-filters { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .75rem; }
+    .qf-btn {
+      font-size: .75rem; font-weight: 600;
+      padding: .25rem .65rem;
+      border-radius: 20px;
+      border: 1px solid var(--gray-200);
+      background: var(--gray-100);
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .qf-btn:hover, .qf-btn.active { background: var(--vgr-blue); color: #fff; border-color: var(--vgr-blue); }
+    .delregion-group { margin-bottom: .5rem; }
+    .delregion-group summary {
+      font-weight: 700; cursor: pointer;
+      padding: .4rem 0;
+      color: var(--vgr-blue);
+      font-size: .82rem;
+      list-style: none;
+      display: flex; align-items: center; gap: .4rem;
+    }
+    .delregion-group summary::-webkit-details-marker { display: none; }
+    .delregion-group summary::before { content: '▶'; font-size: .65rem; transition: transform .2s; }
+    .delregion-group[open] summary::before { transform: rotate(90deg); }
+    .kommune-item {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .2rem 0 .2rem .75rem;
+      font-size: .82rem;
+      cursor: pointer;
+    }
+    .kommune-item input[type=checkbox] { accent-color: var(--vgr-teal); cursor: pointer; }
+    .kommune-item label { cursor: pointer; flex: 1; }
+    .selected-count { font-size: .75rem; color: var(--gray-600); margin-top: .5rem; }
+
+    .compare-main { display: flex; flex-direction: column; gap: 1.25rem; }
+    .controls-row { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
+    .controls-row select {
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: .45rem .75rem;
+      font-size: .85rem;
+      background: #fff;
+      color: var(--gray-800);
+      cursor: pointer;
+    }
+    .controls-row label { font-size: .85rem; font-weight: 600; color: var(--gray-600); }
+    .btn-add-indicator {
+      margin-left: auto;
+      background: var(--vgr-teal);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: .45rem 1rem;
+      font-size: .83rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; gap: .4rem;
+    }
+    .btn-add-indicator:hover { background: var(--vgr-blue); }
+
+    .chart-area {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+      position: relative;
+      min-height: 200px;
+    }
+    .chart-area canvas { max-height: 500px; }
+
+    .spinner-overlay {
+      position: absolute; inset: 0;
+      background: rgba(255,255,255,.85);
+      border-radius: 12px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: .75rem;
+      z-index: 10;
+    }
+    .spinner-overlay.hidden { display: none; }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--vgr-teal);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    .spinner-text { font-size: .85rem; color: var(--gray-600); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--gray-600);
+    }
+    .error-state .error-icon { font-size: 2rem; margin-bottom: .5rem; }
+
+    .status-bar {
+      font-size: .75rem;
+      color: var(--gray-600);
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .5rem 0 0;
+    }
+
+    .compare-table-wrap {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+    }
+    .compare-table-wrap h4 { font-size: .9rem; font-weight: 700; color: var(--vgr-blue); margin-bottom: .75rem; }
+    .compare-table th.sortable { cursor: pointer; user-select: none; }
+    .compare-table th.sortable:hover { background: #004d85; }
+    .vs-positive { color: #16a34a; font-weight: 600; }
+    .vs-negative { color: var(--vgr-accent); font-weight: 600; }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.4);
+      z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 480px;
+      width: 90%;
+      box-shadow: 0 8px 32px rgba(0,0,0,.2);
+    }
+    .modal-box h3 { color: var(--vgr-blue); margin-bottom: .5rem; }
+    .modal-box p { font-size: .85rem; color: var(--gray-600); margin-bottom: 1.25rem; }
+    .coming-soon-list { list-style: none; display: flex; flex-direction: column; gap: .75rem; }
+    .coming-soon-list li {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .75rem 1rem;
+      background: var(--gray-100);
+      border-radius: 8px;
+      font-size: .85rem;
+    }
+    .coming-soon-list li .ind-name { font-weight: 600; color: var(--gray-800); }
+    .coming-soon-list li .ind-api { font-size: .72rem; color: var(--gray-600); }
+    .badge-soon {
+      font-size: .7rem; font-weight: 700;
+      background: #FEF3C7; color: #92400E;
+      border-radius: 20px; padding: 2px 8px;
+      white-space: nowrap;
+    }
+    .modal-close {
+      margin-top: 1.25rem;
+      background: var(--vgr-blue);
+      color: #fff; border: none;
+      border-radius: 8px; padding: .6rem 1.5rem;
+      font-size: .85rem; font-weight: 600;
+      cursor: pointer; width: 100%;
+    }
+
+    /* DELREGION LEGEND */
+    .dr-legend { display: flex; flex-wrap: wrap; gap: .75rem; font-size: .78rem; }
+    .dr-legend-item { display: flex; align-items: center; gap: .4rem; }
+    .dr-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+
+    @media (max-width: 768px) {
+      .compare-layout { grid-template-columns: 1fr; }
+      .compare-sidebar { position: static; max-height: 300px; }
+    }
     @media (max-width: 640px) {
       .chart-grid { grid-template-columns: 1fr; }
       .kpi-grid   { grid-template-columns: 1fr 1fr; }
@@ -273,19 +369,17 @@
   <button onclick="show('naringsliv',this)">🏭 Näringsliv</button>
   <button onclick="show('kollektivtrafik',this)">🚆 Kollektivtrafik</button>
   <button onclick="show('kallor',this)">🔗 Datakällor</button>
+  <button onclick="show('kommuner',this)">🗺️ Kommuner</button>
 </nav>
 
 <main>
 
-  <!-- ═══════════════════════════════════════════════
-       DEMOGRAFI
-  ═══════════════════════════════════════════════ -->
+  <!-- DEMOGRAFI -->
   <section id="demografi" class="section visible">
     <div class="section-header">
       <h2>Demografisk utveckling</h2>
       <p>Västra Götaland och Sverige står inför en demografisk omvandling med sjunkande barnafödande, åldrande befolkning och regionala obalanser. Över hälften av länets kommuner minskar i folkmängd.</p>
     </div>
-
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">Invånare VG</div>
@@ -308,24 +402,20 @@
         <div class="kpi-sub">Jämfört med Europa 1,4 (FN 2024)</div>
       </div>
     </div>
-
     <div class="info-box">
       <strong>Utmaning:</strong> Allt fler kommuner ställs om från tillväxtfokus till att hantera befolkningsminskning. Försörjningen av äldre ökar medan barnomsorgsbehovet sjunker. Barnafödandet i Sverige och Norden är bland det snabbast sjunkande i hela Europa.
     </div>
-
     <div class="chart-grid">
       <div class="chart-card wide">
         <h3>Summerat fruktsamhetstal – Norden 1970–2023</h3>
         <div class="chart-source">Källa: Eurostat</div>
         <canvas id="chartFruktsamhet"></canvas>
       </div>
-
       <div class="chart-card">
         <h3>Åldersstruktur – principiell förändring Västra Götaland</h3>
         <div class="chart-source">Källa: SCB / VGR Analys 2026</div>
         <canvas id="chartAlder"></canvas>
       </div>
-
       <div class="chart-card">
         <h3>Befolkningsfördelning – medelålder Europa vs Afrika</h3>
         <div class="chart-source">Källa: FN 2024</div>
@@ -334,15 +424,12 @@
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════════════════
-       EKONOMI
-  ═══════════════════════════════════════════════ -->
+  <!-- EKONOMI -->
   <section id="ekonomi" class="section">
     <div class="section-header">
       <h2>Ekonomi</h2>
       <p>Västra Götaland har landets högsta FoU-investeringar och en stark BRP per capita. Ekonomin präglas av globalt exportberoende industri och god omställningsförmåga – men är känslig för handelskonflikter.</p>
     </div>
-
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">BRP per capita – rangordning</div>
@@ -365,20 +452,17 @@
         <div class="kpi-sub">Högst av alla Sveriges län 2023</div>
       </div>
     </div>
-
     <div class="chart-grid">
       <div class="chart-card wide">
         <h3>Inflation (KPIF) – procentuell förändring 1988–2025</h3>
         <div class="chart-source">Källa: SCB / Riksbanken</div>
         <canvas id="chartInflation"></canvas>
       </div>
-
       <div class="chart-card">
         <h3>Bruttoregionalprodukt per capita 2023 – urval av län</h3>
         <div class="chart-source">Källa: SCB</div>
         <canvas id="chartBRP"></canvas>
       </div>
-
       <div class="chart-card">
         <h3>Andel av befolkningen försörjd av sociala ersättningar</h3>
         <div class="chart-source">Källa: SCB / VGR Analys 2026</div>
@@ -387,15 +471,12 @@
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════════════════
-       UTBILDNING
-  ═══════════════════════════════════════════════ -->
+  <!-- UTBILDNING -->
   <section id="utbildning" class="section">
     <div class="section-header">
       <h2>Utbildning</h2>
       <p>Utbildningsnivån ökar men grundskolans genomströmning försämras. En växande andel elever saknar gymnasiebehörighet. Yrkeshögskolan och högre utbildning spelar allt viktigare roller för kompetensförsörjningen.</p>
     </div>
-
     <div class="kpi-grid">
       <div class="kpi-card accent">
         <div class="kpi-label">Gymnasiebehörighet VG 2025</div>
@@ -418,26 +499,22 @@
         <div class="kpi-sub">Sverige 2024 (SCB)</div>
       </div>
     </div>
-
     <div class="chart-grid">
       <div class="chart-card wide">
         <h3>Gymnasiebehörighet åk 9 per delregion 2011–2025</h3>
         <div class="chart-source">Källa: Skolverket</div>
         <canvas id="chartGymbeh"></canvas>
       </div>
-
       <div class="chart-card">
         <h3>Helårsstudenter per lärosäte i VG 2024</h3>
         <div class="chart-source">Källa: SCB</div>
         <canvas id="chartLarosaten"></canvas>
       </div>
-
       <div class="chart-card">
         <h3>YH-studenter antagna per område i VG 2024</h3>
         <div class="chart-source">Källa: SCB</div>
         <canvas id="chartYH"></canvas>
       </div>
-
       <div class="chart-card wide">
         <h3>Förstahandssökande till gymnasieprogram i VG (totalt 2021–2026)</h3>
         <div class="chart-source">Källa: Skolverket</div>
@@ -446,15 +523,12 @@
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════════════════
-       NÄRINGSLIV
-  ═══════════════════════════════════════════════ -->
+  <!-- NÄRINGSLIV -->
   <section id="naringsliv" class="section">
     <div class="section-header">
       <h2>Näringsliv och innovation</h2>
       <p>Västra Götalands näringsliv genomgår en strukturomvandling driven av digitalisering och grön omställning. Regionen är stark inom industri, life science och FoU – men utsatt för externa handelschocker.</p>
     </div>
-
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">Sysselsatta i VG (20–64 år)</div>
@@ -477,26 +551,22 @@
         <div class="kpi-sub">Bl.a. fordon, life science, logistik</div>
       </div>
     </div>
-
     <div class="chart-grid">
       <div class="chart-card wide">
         <h3>Sysselsättning i bolag – topp branscher i VG 2024 (årsarbeten)</h3>
         <div class="chart-source">Källa: SCB / VGR Analys 2026</div>
         <canvas id="chartNaringsliv"></canvas>
       </div>
-
       <div class="chart-card">
         <h3>FoU-utgifter (mnkr) – tre storstadslän 2023</h3>
         <div class="chart-source">Källa: SCB</div>
         <canvas id="chartFoU"></canvas>
       </div>
-
       <div class="chart-card">
         <h3>Patentansökningar per region 2024 – urval</h3>
         <div class="chart-source">Källa: SCB / VGR Analys 2026</div>
         <canvas id="chartPatent"></canvas>
       </div>
-
       <div class="chart-card wide">
         <h3>Topp 5 arbetsgivare per delregion (årsarbeten, 2024)</h3>
         <div class="chart-source">Källa: SCB / VGR Analys 2026</div>
@@ -522,15 +592,12 @@
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════════════════
-       KOLLEKTIVTRAFIK
-  ═══════════════════════════════════════════════ -->
+  <!-- KOLLEKTIVTRAFIK -->
   <section id="kollektivtrafik" class="section">
     <div class="section-header">
       <h2>Kollektivtrafik och infrastruktur</h2>
       <p>Västra Götaland har en välutvecklad infrastruktur men bilen dominerar fortfarande. Hållbara resealternativ ökar i andel, men stora geografiska skillnader i tillgänglighet kvarstår – särskilt på landsbygden.</p>
     </div>
-
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">Statliga regionala vägar</div>
@@ -553,26 +620,22 @@
         <div class="kpi-sub">Nordeuropas viktigaste container-hamn</div>
       </div>
     </div>
-
     <div class="chart-grid">
       <div class="chart-card">
         <h3>Kollektivtrafikens marknadsandel 2022–2025 i VG</h3>
         <div class="chart-source">Källa: Västtrafik / VGR Analys 2026</div>
         <canvas id="chartKollAndel"></canvas>
       </div>
-
       <div class="chart-card">
         <h3>Färdmedelsfördelning 2024–2025 (% av resor)</h3>
         <div class="chart-source">Källa: VGR Analys 2026</div>
         <canvas id="chartFardmedel"></canvas>
       </div>
-
       <div class="chart-card">
         <h3>Pendling till annan kommun – andel av sysselsatta per delregion</h3>
         <div class="chart-source">Källa: SCB 2023</div>
         <canvas id="chartPendling"></canvas>
       </div>
-
       <div class="chart-card">
         <h3>Andel som potentiellt kan cykla till arbetet (≤30 min)</h3>
         <div class="chart-source">Källa: VGR Analys 2026</div>
@@ -581,20 +644,15 @@
     </div>
   </section>
 
-
-  <!-- ═══════════════════════════════════════════════
-       DATAKÄLLOR
-  ═══════════════════════════════════════════════ -->
+  <!-- DATAKÄLLOR -->
   <section id="kallor" class="section">
     <div class="section-header">
       <h2>Datakällor och API-kopplingar</h2>
       <p>Alla datakällor som används i rapporten Fakta Västra Götaland 2026. De flesta är öppna och maskinläsbara via API. Klicka på länkarna för direktåtkomst till data, API-dokumentation eller nedladdningssidor.</p>
     </div>
-
     <div class="info-box">
       <strong>Tips för vidareutveckling:</strong> SCB:s PxWeb-API och Skolverkets öppna statistik är de rikaste källorna och täcker merparten av diagrammen i denna dashboard. Eurostat och Trafikanalys har REST-API:er med JSON-svar. Nordregio, VGR:s befolkningsprognos och Kollektivtrafikbarometern är tillgängliga som Excel/CSV-nedladdning.
     </div>
-
     <!-- SCB -->
     <div class="chart-card" style="margin-bottom:1.5rem">
       <h3>📊 SCB – Statistiska centralbyrån</h3>
@@ -603,89 +661,23 @@
         <table>
           <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>API / Nedladdning</th><th>Format</th></tr></thead>
           <tbody>
-            <tr>
-              <td>Befolkning per kommun, ålder, kön</td>
-              <td>Demografi</td>
-              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__BE__BE0101__BE0101A/BefolkningNy/" target="_blank">PxWeb API – BE0101</a></td>
-              <td>JSON/CSV/px</td>
-            </tr>
-            <tr>
-              <td>Summerat fruktsamhetstal (TFR)</td>
-              <td>Demografi</td>
-              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__BE__BE0701__BE0701A/SumFruktsamhetK/" target="_blank">PxWeb API – BE0701</a></td>
-              <td>JSON/CSV/px</td>
-            </tr>
-            <tr>
-              <td>Inrikes och utrikes omflyttning</td>
-              <td>Demografi</td>
-              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__BE__BE0101__BE0101J/Flyttningar97/" target="_blank">PxWeb API – BE0101J</a></td>
-              <td>JSON/CSV/px</td>
-            </tr>
-            <tr>
-              <td>Bruttoregionalprodukt (BRP) per capita per län</td>
-              <td>Ekonomi</td>
-              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__NR__NR0105__NR0105A/NR0105ENS2010T05A/" target="_blank">PxWeb API – NR0105</a></td>
-              <td>JSON/CSV/px</td>
-            </tr>
-            <tr>
-              <td>KPIF – konsumentprisindex med fast ränta</td>
-              <td>Ekonomi</td>
-              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__PR__PR0101__PR0101A/KPIfastindex07/" target="_blank">PxWeb API – PR0101</a></td>
-              <td>JSON/CSV/px</td>
-            </tr>
-            <tr>
-              <td>Reallön, löneutveckling</td>
-              <td>Ekonomi</td>
-              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__AM__AM0302/" target="_blank">PxWeb API – AM0302</a></td>
-              <td>JSON/CSV/px</td>
-            </tr>
-            <tr>
-              <td>Sociala ersättningar och bidrag</td>
-              <td>Ekonomi</td>
-              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__HE__HE0110/" target="_blank">PxWeb API – HE0110</a></td>
-              <td>JSON/CSV/px</td>
-            </tr>
-            <tr>
-              <td>Befolkningens utbildningsnivå per region, kön, ålder</td>
-              <td>Utbildning</td>
-              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__UF__UF0506/" target="_blank">PxWeb API – UF0506</a></td>
-              <td>JSON/CSV/px</td>
-            </tr>
-            <tr>
-              <td>Sysselsättning per bransch och region</td>
-              <td>Näringsliv</td>
-              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__AM__AM0207/" target="_blank">PxWeb API – AM0207</a></td>
-              <td>JSON/CSV/px</td>
-            </tr>
-            <tr>
-              <td>FoU-utgifter per sektor och region</td>
-              <td>Näringsliv, Ekonomi</td>
-              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__UF__UF0301/" target="_blank">PxWeb API – UF0301</a></td>
-              <td>JSON/CSV/px</td>
-            </tr>
-            <tr>
-              <td>Patentansökningar per region</td>
-              <td>Näringsliv</td>
-              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__IP__IP0301/" target="_blank">PxWeb API – IP0301</a></td>
-              <td>JSON/CSV/px</td>
-            </tr>
-            <tr>
-              <td>Personbilar per region</td>
-              <td>Kollektivtrafik</td>
-              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__TK__TK1001__TK1001A/PersBilarDrivMedel/" target="_blank">PxWeb API – TK1001</a></td>
-              <td>JSON/CSV/px</td>
-            </tr>
-            <tr>
-              <td>SCB PxWeb – generell API-dokumentation</td>
-              <td>Alla områden</td>
-              <td><a href="https://www.scb.se/vara-tjanster/oppna-data/api-for-statistikdatabasen/" target="_blank">scb.se – API-dokumentation</a></td>
-              <td>JSON / REST</td>
-            </tr>
+            <tr><td>Befolkning per kommun, ålder, kön</td><td>Demografi</td><td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__BE__BE0101__BE0101A/BefolkningNy/" target="_blank">PxWeb API – BE0101</a></td><td>JSON/CSV/px</td></tr>
+            <tr><td>Summerat fruktsamhetstal (TFR)</td><td>Demografi</td><td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__BE__BE0701__BE0701A/SumFruktsamhetK/" target="_blank">PxWeb API – BE0701</a></td><td>JSON/CSV/px</td></tr>
+            <tr><td>Inrikes och utrikes omflyttning</td><td>Demografi</td><td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__BE__BE0101__BE0101J/Flyttningar97/" target="_blank">PxWeb API – BE0101J</a></td><td>JSON/CSV/px</td></tr>
+            <tr><td>Bruttoregionalprodukt (BRP) per capita per län</td><td>Ekonomi</td><td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__NR__NR0105__NR0105A/NR0105ENS2010T05A/" target="_blank">PxWeb API – NR0105</a></td><td>JSON/CSV/px</td></tr>
+            <tr><td>KPIF – konsumentprisindex med fast ränta</td><td>Ekonomi</td><td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__PR__PR0101__PR0101A/KPIfastindex07/" target="_blank">PxWeb API – PR0101</a></td><td>JSON/CSV/px</td></tr>
+            <tr><td>Reallön, löneutveckling</td><td>Ekonomi</td><td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__AM__AM0302/" target="_blank">PxWeb API – AM0302</a></td><td>JSON/CSV/px</td></tr>
+            <tr><td>Sociala ersättningar och bidrag</td><td>Ekonomi</td><td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__HE__HE0110/" target="_blank">PxWeb API – HE0110</a></td><td>JSON/CSV/px</td></tr>
+            <tr><td>Befolkningens utbildningsnivå per region, kön, ålder</td><td>Utbildning</td><td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__UF__UF0506/" target="_blank">PxWeb API – UF0506</a></td><td>JSON/CSV/px</td></tr>
+            <tr><td>Sysselsättning per bransch och region</td><td>Näringsliv</td><td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__AM__AM0207/" target="_blank">PxWeb API – AM0207</a></td><td>JSON/CSV/px</td></tr>
+            <tr><td>FoU-utgifter per sektor och region</td><td>Näringsliv, Ekonomi</td><td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__UF__UF0301/" target="_blank">PxWeb API – UF0301</a></td><td>JSON/CSV/px</td></tr>
+            <tr><td>Patentansökningar per region</td><td>Näringsliv</td><td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__IP__IP0301/" target="_blank">PxWeb API – IP0301</a></td><td>JSON/CSV/px</td></tr>
+            <tr><td>Personbilar per region</td><td>Kollektivtrafik</td><td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__TK__TK1001__TK1001A/PersBilarDrivMedel/" target="_blank">PxWeb API – TK1001</a></td><td>JSON/CSV/px</td></tr>
+            <tr><td>SCB PxWeb – generell API-dokumentation</td><td>Alla områden</td><td><a href="https://www.scb.se/vara-tjanster/oppna-data/api-for-statistikdatabasen/" target="_blank">scb.se – API-dokumentation</a></td><td>JSON / REST</td></tr>
           </tbody>
         </table>
       </div>
     </div>
-
     <!-- Skolverket -->
     <div class="chart-card" style="margin-bottom:1.5rem">
       <h3>📚 Skolverket</h3>
@@ -694,66 +686,29 @@
         <table>
           <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>API / Nedladdning</th><th>Format</th></tr></thead>
           <tbody>
-            <tr>
-              <td>Gymnasiebehörighet åk 9 per kommun och år</td>
-              <td>Utbildning</td>
-              <td><a href="https://www.skolverket.se/skolutveckling/statistik/sok-statistik-om-forskola-skola-och-vuxenutbildning?sok=SiRiS&omrade=Grundskola&lasar=2024-25&typ=Riksniva&id=3002" target="_blank">Skolverkets statistikdatabas – SIRIS</a></td>
-              <td>Excel / CSV</td>
-            </tr>
-            <tr>
-              <td>Sökande och antagna gymnasiet per program och kön</td>
-              <td>Utbildning</td>
-              <td><a href="https://www.skolverket.se/skolutveckling/statistik/sok-statistik-om-forskola-skola-och-vuxenutbildning?sok=SiRiS&omrade=Gymnasieskola" target="_blank">Skolverkets statistikdatabas – Gymnasiet</a></td>
-              <td>Excel / CSV</td>
-            </tr>
-            <tr>
-              <td>Komvux – elever per program, region, kön</td>
-              <td>Utbildning</td>
-              <td><a href="https://www.skolverket.se/skolutveckling/statistik/sok-statistik-om-forskola-skola-och-vuxenutbildning?sok=SiRiS&omrade=Komvux" target="_blank">Skolverkets statistikdatabas – Komvux</a></td>
-              <td>Excel / CSV</td>
-            </tr>
-            <tr>
-              <td>Skolverkets öppna data (maskinläsbart)</td>
-              <td>Utbildning</td>
-              <td><a href="https://www.skolverket.se/skolutveckling/statistik/om-skolverkets-statistik/oppna-data" target="_blank">skolverket.se/oppna-data</a></td>
-              <td>JSON / CSV / API</td>
-            </tr>
+            <tr><td>Gymnasiebehörighet åk 9 per kommun och år</td><td>Utbildning</td><td><a href="https://www.skolverket.se/skolutveckling/statistik/sok-statistik-om-forskola-skola-och-vuxenutbildning?sok=SiRiS&omrade=Grundskola&lasar=2024-25&typ=Riksniva&id=3002" target="_blank">Skolverkets statistikdatabas – SIRIS</a></td><td>Excel / CSV</td></tr>
+            <tr><td>Sökande och antagna gymnasiet per program och kön</td><td>Utbildning</td><td><a href="https://www.skolverket.se/skolutveckling/statistik/sok-statistik-om-forskola-skola-och-vuxenutbildning?sok=SiRiS&omrade=Gymnasieskola" target="_blank">Skolverkets statistikdatabas – Gymnasiet</a></td><td>Excel / CSV</td></tr>
+            <tr><td>Komvux – elever per program, region, kön</td><td>Utbildning</td><td><a href="https://www.skolverket.se/skolutveckling/statistik/sok-statistik-om-forskola-skola-och-vuxenutbildning?sok=SiRiS&omrade=Komvux" target="_blank">Skolverkets statistikdatabas – Komvux</a></td><td>Excel / CSV</td></tr>
+            <tr><td>Skolverkets öppna data (maskinläsbart)</td><td>Utbildning</td><td><a href="https://www.skolverket.se/skolutveckling/statistik/om-skolverkets-statistik/oppna-data" target="_blank">skolverket.se/oppna-data</a></td><td>JSON / CSV / API</td></tr>
           </tbody>
         </table>
       </div>
     </div>
-
     <!-- UHR + UKÄ -->
     <div class="chart-card" style="margin-bottom:1.5rem">
-      <h3>🎓 UHR & UKÄ – Högskoleverket och Universitetskanslersämbetet</h3>
+      <h3>🎓 UHR &amp; UKÄ – Högskoleverket och Universitetskanslersämbetet</h3>
       <div class="chart-source">Antagning, antal studenter, examinationsgrad vid högskola/universitet</div>
       <div class="table-wrap" style="margin-top:.75rem">
         <table>
           <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>Länk</th><th>Format</th></tr></thead>
           <tbody>
-            <tr>
-              <td>Antagning till högre utbildning per program och lärosäte</td>
-              <td>Utbildning</td>
-              <td><a href="https://www.uhr.se/studier-och-antagning/antagningsstatistik/" target="_blank">uhr.se – Antagningsstatistik</a></td>
-              <td>Excel / PDF</td>
-            </tr>
-            <tr>
-              <td>Helårsstudenter och examina per lärosäte och region</td>
-              <td>Utbildning</td>
-              <td><a href="https://www.uka.se/statistik--analys/statistik/statistik-om-hogre-utbildning.html" target="_blank">uka.se – Statistik om högre utbildning</a></td>
-              <td>Excel / CSV</td>
-            </tr>
-            <tr>
-              <td>UKÄ:s statistikdatabas (öppen data)</td>
-              <td>Utbildning</td>
-              <td><a href="https://www.uka.se/statistik--analys/statistik/statistikdatabasen.html" target="_blank">uka.se – Statistikdatabasen</a></td>
-              <td>Excel / CSV</td>
-            </tr>
+            <tr><td>Antagning till högre utbildning per program och lärosäte</td><td>Utbildning</td><td><a href="https://www.uhr.se/studier-och-antagning/antagningsstatistik/" target="_blank">uhr.se – Antagningsstatistik</a></td><td>Excel / PDF</td></tr>
+            <tr><td>Helårsstudenter och examina per lärosäte och region</td><td>Utbildning</td><td><a href="https://www.uka.se/statistik--analys/statistik/statistik-om-hogre-utbildning.html" target="_blank">uka.se – Statistik om högre utbildning</a></td><td>Excel / CSV</td></tr>
+            <tr><td>UKÄ:s statistikdatabas (öppen data)</td><td>Utbildning</td><td><a href="https://www.uka.se/statistik--analys/statistik/statistikdatabasen.html" target="_blank">uka.se – Statistikdatabasen</a></td><td>Excel / CSV</td></tr>
           </tbody>
         </table>
       </div>
     </div>
-
     <!-- MYH -->
     <div class="chart-card" style="margin-bottom:1.5rem">
       <h3>🏫 MYH – Myndigheten för yrkeshögskolan</h3>
@@ -762,60 +717,28 @@
         <table>
           <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>Länk</th><th>Format</th></tr></thead>
           <tbody>
-            <tr>
-              <td>Statistik om yrkeshögskolan per region och område</td>
-              <td>Utbildning</td>
-              <td><a href="https://www.myh.se/statistik-och-analys/statistik-om-yrkeshogskolan/" target="_blank">myh.se – Statistik YH</a></td>
-              <td>Excel / CSV</td>
-            </tr>
-            <tr>
-              <td>MYH:s öppna data</td>
-              <td>Utbildning</td>
-              <td><a href="https://www.myh.se/statistik-och-analys/oppna-data/" target="_blank">myh.se – Öppna data</a></td>
-              <td>JSON / CSV</td>
-            </tr>
+            <tr><td>Statistik om yrkeshögskolan per region och område</td><td>Utbildning</td><td><a href="https://www.myh.se/statistik-och-analys/statistik-om-yrkeshogskolan/" target="_blank">myh.se – Statistik YH</a></td><td>Excel / CSV</td></tr>
+            <tr><td>MYH:s öppna data</td><td>Utbildning</td><td><a href="https://www.myh.se/statistik-och-analys/oppna-data/" target="_blank">myh.se – Öppna data</a></td><td>JSON / CSV</td></tr>
           </tbody>
         </table>
       </div>
     </div>
-
     <!-- Eurostat + FN -->
     <div class="chart-card" style="margin-bottom:1.5rem">
-      <h3>🌍 Eurostat & FN</h3>
+      <h3>🌍 Eurostat &amp; FN</h3>
       <div class="chart-source">Internationell jämförelsedata för demografi, ekonomi och utbildning</div>
       <div class="table-wrap" style="margin-top:.75rem">
         <table>
           <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>API / Länk</th><th>Format</th></tr></thead>
           <tbody>
-            <tr>
-              <td>Fruktsamhetstal (TFR) per land – Norden och Europa</td>
-              <td>Demografi</td>
-              <td><a href="https://ec.europa.eu/eurostat/databrowser/view/demo_find/default/table" target="_blank">Eurostat – demo_find (fertility)</a></td>
-              <td>JSON/SDMX REST API</td>
-            </tr>
-            <tr>
-              <td>Befolkning per ålder och kön, EU-länder</td>
-              <td>Demografi</td>
-              <td><a href="https://ec.europa.eu/eurostat/databrowser/view/demo_pjanind/default/table" target="_blank">Eurostat – demo_pjanind</a></td>
-              <td>JSON/SDMX REST API</td>
-            </tr>
-            <tr>
-              <td>Eurostat REST API – generell dokumentation</td>
-              <td>Demografi, Ekonomi</td>
-              <td><a href="https://ec.europa.eu/eurostat/web/json-and-unicode-web-services/getting-started/rest-request" target="_blank">ec.europa.eu – Eurostat API</a></td>
-              <td>JSON / SDMX</td>
-            </tr>
-            <tr>
-              <td>FN:s befolkningsprognoser (World Population Prospects)</td>
-              <td>Demografi</td>
-              <td><a href="https://population.un.org/wpp/Download/Standard/MostUsed/" target="_blank">population.un.org – WPP 2024</a></td>
-              <td>Excel / CSV</td>
-            </tr>
+            <tr><td>Fruktsamhetstal (TFR) per land – Norden och Europa</td><td>Demografi</td><td><a href="https://ec.europa.eu/eurostat/databrowser/view/demo_find/default/table" target="_blank">Eurostat – demo_find (fertility)</a></td><td>JSON/SDMX REST API</td></tr>
+            <tr><td>Befolkning per ålder och kön, EU-länder</td><td>Demografi</td><td><a href="https://ec.europa.eu/eurostat/databrowser/view/demo_pjanind/default/table" target="_blank">Eurostat – demo_pjanind</a></td><td>JSON/SDMX REST API</td></tr>
+            <tr><td>Eurostat REST API – generell dokumentation</td><td>Demografi, Ekonomi</td><td><a href="https://ec.europa.eu/eurostat/web/json-and-unicode-web-services/getting-started/rest-request" target="_blank">ec.europa.eu – Eurostat API</a></td><td>JSON / SDMX</td></tr>
+            <tr><td>FN:s befolkningsprognoser (World Population Prospects)</td><td>Demografi</td><td><a href="https://population.un.org/wpp/Download/Standard/MostUsed/" target="_blank">population.un.org – WPP 2024</a></td><td>Excel / CSV</td></tr>
           </tbody>
         </table>
       </div>
     </div>
-
     <!-- Nordregio -->
     <div class="chart-card" style="margin-bottom:1.5rem">
       <h3>🗺️ Nordregio</h3>
@@ -824,172 +747,77 @@
         <table>
           <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>Länk</th><th>Format</th></tr></thead>
           <tbody>
-            <tr>
-              <td>Befolkningsförändring per nordisk kommun 1990–2022</td>
-              <td>Demografi</td>
-              <td><a href="https://nordregio.org/nordregio-report/rethinking-population-shrinkage/" target="_blank">nordregio.org – Population shrinkage report</a></td>
-              <td>PDF / kartdata</td>
-            </tr>
-            <tr>
-              <td>Nordregio Statistics – öppna regiondata Norden</td>
-              <td>Demografi</td>
-              <td><a href="https://nordregio.org/statistics/" target="_blank">nordregio.org/statistics</a></td>
-              <td>CSV / Excel</td>
-            </tr>
+            <tr><td>Befolkningsförändring per nordisk kommun 1990–2022</td><td>Demografi</td><td><a href="https://nordregio.org/nordregio-report/rethinking-population-shrinkage/" target="_blank">nordregio.org – Population shrinkage report</a></td><td>PDF / kartdata</td></tr>
+            <tr><td>Nordregio Statistics – öppna regiondata Norden</td><td>Demografi</td><td><a href="https://nordregio.org/statistics/" target="_blank">nordregio.org/statistics</a></td><td>CSV / Excel</td></tr>
           </tbody>
         </table>
       </div>
     </div>
-
-    <!-- Trafikverket + Transportstyrelsen + Trafikanalys -->
+    <!-- Trafikverket -->
     <div class="chart-card" style="margin-bottom:1.5rem">
-      <h3>🚗 Trafikverket, Transportstyrelsen & Trafikanalys</h3>
+      <h3>🚗 Trafikverket, Transportstyrelsen &amp; Trafikanalys</h3>
       <div class="chart-source">Vägtrafik, järnväg, godsflöden, trängselskatt och kollektivtrafik</div>
       <div class="table-wrap" style="margin-top:.75rem">
         <table>
           <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>Länk</th><th>Format</th></tr></thead>
           <tbody>
-            <tr>
-              <td>Årsmedeldygnstrafik (AADT) per vägsträcka – NVDB</td>
-              <td>Kollektivtrafik</td>
-              <td><a href="https://nvdb.trafikverket.se/SeEgenskaperAPI/api/v1/datakatalogen" target="_blank">NVDB API – Trafikverket</a></td>
-              <td>REST / GeoJSON</td>
-            </tr>
-            <tr>
-              <td>Järnvägens kapacitetsutnyttjande</td>
-              <td>Kollektivtrafik</td>
-              <td><a href="https://www.trafikverket.se/contentassets/08d5f84cc6c944d4a3adb78cbeff7e66/kapacitetsutredning_2024.pdf" target="_blank">Trafikverket – kapacitetsutredning</a></td>
-              <td>PDF</td>
-            </tr>
-            <tr>
-              <td>Trängselskatt Göteborg – antal passager per år</td>
-              <td>Kollektivtrafik</td>
-              <td><a href="https://www.transportstyrelsen.se/sv/vagtrafik/trangselskatt/statistik-trangselskatt/" target="_blank">Transportstyrelsen – trängselskattstatistik</a></td>
-              <td>Excel / PDF</td>
-            </tr>
-            <tr>
-              <td>Godsstatistik – Göteborgs hamn, sjöfart</td>
-              <td>Kollektivtrafik</td>
-              <td><a href="https://www.trafa.se/sjofart/godsstatistik/" target="_blank">Trafikanalys – godsstatistik</a></td>
-              <td>Excel / CSV</td>
-            </tr>
-            <tr>
-              <td>Körsträcka personbil per region</td>
-              <td>Kollektivtrafik</td>
-              <td><a href="https://www.trafa.se/vag/korsträckor/" target="_blank">Trafikanalys – körsträckor</a></td>
-              <td>Excel / CSV</td>
-            </tr>
-            <tr>
-              <td>Trafikanalys öppna data</td>
-              <td>Kollektivtrafik</td>
-              <td><a href="https://www.trafa.se/om-trafikanalys/oppna-data/" target="_blank">trafa.se – Öppna data</a></td>
-              <td>CSV / Excel / API</td>
-            </tr>
+            <tr><td>Årsmedeldygnstrafik (AADT) per vägsträcka – NVDB</td><td>Kollektivtrafik</td><td><a href="https://nvdb.trafikverket.se/SeEgenskaperAPI/api/v1/datakatalogen" target="_blank">NVDB API – Trafikverket</a></td><td>REST / GeoJSON</td></tr>
+            <tr><td>Järnvägens kapacitetsutnyttjande</td><td>Kollektivtrafik</td><td><a href="https://www.trafikverket.se/contentassets/08d5f84cc6c944d4a3adb78cbeff7e66/kapacitetsutredning_2024.pdf" target="_blank">Trafikverket – kapacitetsutredning</a></td><td>PDF</td></tr>
+            <tr><td>Trängselskatt Göteborg – antal passager per år</td><td>Kollektivtrafik</td><td><a href="https://www.transportstyrelsen.se/sv/vagtrafik/trangselskatt/statistik-trangselskatt/" target="_blank">Transportstyrelsen – trängselskattstatistik</a></td><td>Excel / PDF</td></tr>
+            <tr><td>Godsstatistik – Göteborgs hamn, sjöfart</td><td>Kollektivtrafik</td><td><a href="https://www.trafa.se/sjofart/godsstatistik/" target="_blank">Trafikanalys – godsstatistik</a></td><td>Excel / CSV</td></tr>
+            <tr><td>Körsträcka personbil per region</td><td>Kollektivtrafik</td><td><a href="https://www.trafa.se/vag/korsträckor/" target="_blank">Trafikanalys – körsträckor</a></td><td>Excel / CSV</td></tr>
+            <tr><td>Trafikanalys öppna data</td><td>Kollektivtrafik</td><td><a href="https://www.trafa.se/om-trafikanalys/oppna-data/" target="_blank">trafa.se – Öppna data</a></td><td>CSV / Excel / API</td></tr>
           </tbody>
         </table>
       </div>
     </div>
-
-    <!-- Västtrafik + Kollektivtrafikbarometern -->
+    <!-- Västtrafik -->
     <div class="chart-card" style="margin-bottom:1.5rem">
-      <h3>🚌 Västtrafik & Kollektivtrafikbarometern</h3>
+      <h3>🚌 Västtrafik &amp; Kollektivtrafikbarometern</h3>
       <div class="chart-source">Regional kollektivtrafik, marknadsandel, kundnöjdhet och resmönster</div>
       <div class="table-wrap" style="margin-top:.75rem">
         <table>
           <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>Länk</th><th>Format</th></tr></thead>
           <tbody>
-            <tr>
-              <td>Västtrafik öppna data – tidtabeller, linjer, hållplatser</td>
-              <td>Kollektivtrafik</td>
-              <td><a href="https://www.vasttrafik.se/om-vasttrafik/appar-och-open-data/vasttrafiks-open-data/" target="_blank">vasttrafik.se – Open data</a></td>
-              <td>REST API / GTFS</td>
-            </tr>
-            <tr>
-              <td>Västtrafik API (reseplanerare, avgångar)</td>
-              <td>Kollektivtrafik</td>
-              <td><a href="https://developer.vasttrafik.se/" target="_blank">developer.vasttrafik.se</a></td>
-              <td>REST / OAuth2</td>
-            </tr>
-            <tr>
-              <td>Kollektivtrafikbarometern – marknadsandel, kundnöjdhet per region</td>
-              <td>Kollektivtrafik</td>
-              <td><a href="https://www.trafikverket.se/contentassets/kollektivtrafikbarometern" target="_blank">Trafikverket – Kollektivtrafikbarometern</a></td>
-              <td>Excel / PDF</td>
-            </tr>
+            <tr><td>Västtrafik öppna data – tidtabeller, linjer, hållplatser</td><td>Kollektivtrafik</td><td><a href="https://www.vasttrafik.se/om-vasttrafik/appar-och-open-data/vasttrafiks-open-data/" target="_blank">vasttrafik.se – Open data</a></td><td>REST API / GTFS</td></tr>
+            <tr><td>Västtrafik API (reseplanerare, avgångar)</td><td>Kollektivtrafik</td><td><a href="https://developer.vasttrafik.se/" target="_blank">developer.vasttrafik.se</a></td><td>REST / OAuth2</td></tr>
+            <tr><td>Kollektivtrafikbarometern – marknadsandel, kundnöjdhet per region</td><td>Kollektivtrafik</td><td><a href="https://www.trafikverket.se/contentassets/kollektivtrafikbarometern" target="_blank">Trafikverket – Kollektivtrafikbarometern</a></td><td>Excel / PDF</td></tr>
           </tbody>
         </table>
       </div>
     </div>
-
-    <!-- Riksbanken + Konjunkturinstitutet -->
+    <!-- Riksbanken -->
     <div class="chart-card" style="margin-bottom:1.5rem">
-      <h3>💹 Riksbanken & Konjunkturinstitutet</h3>
+      <h3>💹 Riksbanken &amp; Konjunkturinstitutet</h3>
       <div class="chart-source">Styrränta, inflation, konjunktur och makroekonomiska indikatorer</div>
       <div class="table-wrap" style="margin-top:.75rem">
         <table>
           <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>Länk</th><th>Format</th></tr></thead>
           <tbody>
-            <tr>
-              <td>KPIF och KPI – månadsdata</td>
-              <td>Ekonomi</td>
-              <td><a href="https://www.riksbanken.se/sv/statistik/data-och-statistik/inflation/" target="_blank">riksbanken.se – inflationsdata</a></td>
-              <td>Excel / CSV</td>
-            </tr>
-            <tr>
-              <td>Riksbankens statistikdatabas (SESDATA)</td>
-              <td>Ekonomi</td>
-              <td><a href="https://www.riksbanken.se/sv/statistik/data-och-statistik/riksbankens-statistikdatabas/" target="_blank">SESDATA – Riksbankens API</a></td>
-              <td>REST / JSON / CSV</td>
-            </tr>
-            <tr>
-              <td>Konjunkturbarometer och BNP-prognos</td>
-              <td>Ekonomi</td>
-              <td><a href="https://www.konj.se/statistik/konjunkturbarometern.html" target="_blank">konj.se – Konjunkturbarometern</a></td>
-              <td>Excel / CSV</td>
-            </tr>
+            <tr><td>KPIF och KPI – månadsdata</td><td>Ekonomi</td><td><a href="https://www.riksbanken.se/sv/statistik/data-och-statistik/inflation/" target="_blank">riksbanken.se – inflationsdata</a></td><td>Excel / CSV</td></tr>
+            <tr><td>Riksbankens statistikdatabas (SESDATA)</td><td>Ekonomi</td><td><a href="https://www.riksbanken.se/sv/statistik/data-och-statistik/riksbankens-statistikdatabas/" target="_blank">SESDATA – Riksbankens API</a></td><td>REST / JSON / CSV</td></tr>
+            <tr><td>Konjunkturbarometer och BNP-prognos</td><td>Ekonomi</td><td><a href="https://www.konj.se/statistik/konjunkturbarometern.html" target="_blank">konj.se – Konjunkturbarometern</a></td><td>Excel / CSV</td></tr>
           </tbody>
         </table>
       </div>
     </div>
-
-    <!-- EC Regional Innovation + Swecris -->
+    <!-- Innovation -->
     <div class="chart-card" style="margin-bottom:1.5rem">
-      <h3>🔬 Innovation & Forskning</h3>
+      <h3>🔬 Innovation &amp; Forskning</h3>
       <div class="chart-source">Regional innovationsindex, EU-finansiering, FoU och forskningssamverkan</div>
       <div class="table-wrap" style="margin-top:.75rem">
         <table>
           <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>Länk</th><th>Format</th></tr></thead>
           <tbody>
-            <tr>
-              <td>Regional Innovation Scoreboard 2025</td>
-              <td>Näringsliv</td>
-              <td><a href="https://ec.europa.eu/docsroom/documents/57936" target="_blank">European Commission – RIS 2025</a></td>
-              <td>Excel / PDF</td>
-            </tr>
-            <tr>
-              <td>Horisont Europa – deltagande per region</td>
-              <td>Näringsliv</td>
-              <td><a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/horizon-results-platform" target="_blank">EC Horizon Results Platform</a></td>
-              <td>JSON / CSV</td>
-            </tr>
-            <tr>
-              <td>Swecris – svensk forskningsfinansiering</td>
-              <td>Näringsliv</td>
-              <td><a href="https://www.swecris.se" target="_blank">swecris.se</a></td>
-              <td>Webbsök / CSV</td>
-            </tr>
-            <tr>
-              <td>RISE – test- och demonstrationsmiljöer</td>
-              <td>Näringsliv</td>
-              <td><a href="https://www.ri.se/sv/erbjudande/utveckla-skala-upp/testdemonstrationsmiljoer" target="_blank">ri.se – testmiljöer</a></td>
-              <td>Webb</td>
-            </tr>
+            <tr><td>Regional Innovation Scoreboard 2025</td><td>Näringsliv</td><td><a href="https://ec.europa.eu/docsroom/documents/57936" target="_blank">European Commission – RIS 2025</a></td><td>Excel / PDF</td></tr>
+            <tr><td>Horisont Europa – deltagande per region</td><td>Näringsliv</td><td><a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/horizon-results-platform" target="_blank">EC Horizon Results Platform</a></td><td>JSON / CSV</td></tr>
+            <tr><td>Swecris – svensk forskningsfinansiering</td><td>Näringsliv</td><td><a href="https://www.swecris.se" target="_blank">swecris.se</a></td><td>Webbsök / CSV</td></tr>
+            <tr><td>RISE – test- och demonstrationsmiljöer</td><td>Näringsliv</td><td><a href="https://www.ri.se/sv/erbjudande/utveckla-skala-upp/testdemonstrationsmiljoer" target="_blank">ri.se – testmiljöer</a></td><td>Webb</td></tr>
           </tbody>
         </table>
       </div>
     </div>
-
-    <!-- VGR egna källor -->
+    <!-- VGR -->
     <div class="chart-card" style="margin-bottom:1.5rem">
       <h3>📋 VGR – Västra Götalandsregionens egna underlag</h3>
       <div class="chart-source">Rapporter, befolkningsprognos och företagsdatabas</div>
@@ -997,42 +825,16 @@
         <table>
           <thead><tr><th>Rapport / Dataset</th><th>Används i</th><th>Länk</th><th>Format</th></tr></thead>
           <tbody>
-            <tr>
-              <td>Fakta Västra Götaland 2026 – alla underlagsrapporter</td>
-              <td>Alla</td>
-              <td><a href="https://www.vgregion.se/faktavg" target="_blank">vgregion.se/faktavg</a></td>
-              <td>PDF</td>
-            </tr>
-            <tr>
-              <td>VGR Befolkningsprognos 2025</td>
-              <td>Demografi</td>
-              <td><a href="https://www.vgregion.se/regional-utveckling/statistik-och-analys/befolkningsprognoser/" target="_blank">vgregion.se – befolkningsprognoser</a></td>
-              <td>Excel / PDF</td>
-            </tr>
-            <tr>
-              <td>VGR Konjunkturläget – kvartalsvisa rapporter</td>
-              <td>Ekonomi</td>
-              <td><a href="https://www.vgregion.se/regional-utveckling/statistik-och-analys/konjunktur/" target="_blank">vgregion.se – konjunktur</a></td>
-              <td>PDF</td>
-            </tr>
-            <tr>
-              <td>VGR:s företagsdatabas (Dun &amp; Bradstreet)</td>
-              <td>Näringsliv</td>
-              <td><a href="https://www.vgregion.se/regional-utveckling/statistik-och-analys/" target="_blank">vgregion.se – samhällsanalys</a></td>
-              <td>Intern (D&amp;B)</td>
-            </tr>
-            <tr>
-              <td>Kontakt samhällsanalys</td>
-              <td>Alla</td>
-              <td><a href="mailto:samhallsanalys@vgregion.se">samhallsanalys@vgregion.se</a></td>
-              <td>E-post</td>
-            </tr>
+            <tr><td>Fakta Västra Götaland 2026 – alla underlagsrapporter</td><td>Alla</td><td><a href="https://www.vgregion.se/faktavg" target="_blank">vgregion.se/faktavg</a></td><td>PDF</td></tr>
+            <tr><td>VGR Befolkningsprognos 2025</td><td>Demografi</td><td><a href="https://www.vgregion.se/regional-utveckling/statistik-och-analys/befolkningsprognoser/" target="_blank">vgregion.se – befolkningsprognoser</a></td><td>Excel / PDF</td></tr>
+            <tr><td>VGR Konjunkturläget – kvartalsvisa rapporter</td><td>Ekonomi</td><td><a href="https://www.vgregion.se/regional-utveckling/statistik-och-analys/konjunktur/" target="_blank">vgregion.se – konjunktur</a></td><td>PDF</td></tr>
+            <tr><td>VGR:s företagsdatabas (Dun &amp; Bradstreet)</td><td>Näringsliv</td><td><a href="https://www.vgregion.se/regional-utveckling/statistik-och-analys/" target="_blank">vgregion.se – samhällsanalys</a></td><td>Intern (D&amp;B)</td></tr>
+            <tr><td>Kontakt samhällsanalys</td><td>Alla</td><td><a href="mailto:samhallsanalys@vgregion.se">samhallsanalys@vgregion.se</a></td><td>E-post</td></tr>
           </tbody>
         </table>
       </div>
     </div>
-
-    <!-- Snabbguide SCB API -->
+    <!-- Snabbguide -->
     <div class="chart-card" style="margin-bottom:1.5rem">
       <h3>⚡ Snabbguide: Hämta data från SCB PxWeb API</h3>
       <div class="chart-source">Exempel på hur man anropar SCB:s öppna API direkt i JavaScript</div>
@@ -1056,7 +858,95 @@ const data = await response.json();
 // data.data[] innehåller värdena per år
 console.log(data.data.map(d => ({ år: d.key[1], värde: d.values[0] })));</code></pre>
     </div>
+  </section>
 
+  <!-- KOMMUNER -->
+  <section id="kommuner" class="section">
+    <div class="section-header">
+      <h2>Kommunjämförelse – live från SCB</h2>
+      <p>Välj kommuner och indikator för att hämta aktuell statistik direkt från SCB:s öppna API. Data cachas lokalt i 24 timmar.</p>
+    </div>
+
+    <div class="compare-layout">
+      <!-- Sidebar -->
+      <aside class="compare-sidebar">
+        <h4>Välj kommuner</h4>
+        <input type="text" class="search-input" id="kommunSearch" placeholder="Sök kommun…" oninput="filterKommuner(this.value)">
+        <div class="quick-filters">
+          <button class="qf-btn active" onclick="quickFilter('alla',this)">Alla</button>
+          <button class="qf-btn" onclick="quickFilter('Göteborgsregionen',this)">GR</button>
+          <button class="qf-btn" onclick="quickFilter('Fyrbodal',this)">Fyrbodal</button>
+          <button class="qf-btn" onclick="quickFilter('Sjuhärad',this)">Sjuhärad</button>
+          <button class="qf-btn" onclick="quickFilter('Skaraborg',this)">Skaraborg</button>
+        </div>
+        <div id="kommunLista"></div>
+        <div class="selected-count" id="selectedCount">5 kommuner valda</div>
+      </aside>
+
+      <!-- Main panel -->
+      <div class="compare-main">
+        <div class="controls-row">
+          <label for="indikatorSelect">Indikator:</label>
+          <select id="indikatorSelect" onchange="onControlChange()">
+            <option value="befolkning">Folkmängd (total)</option>
+            <option value="forandring">Befolkningsförändring (%)</option>
+            <option value="alder65">Andel 65+ år (%)</option>
+            <option value="alder017">Andel 0–17 år (%)</option>
+            <option value="utrikesfodda">Andel utrikes födda (%)</option>
+          </select>
+          <label for="yearSelect">År:</label>
+          <select id="yearSelect" onchange="onControlChange()">
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+            <option value="2021">2021</option>
+            <option value="2020">2020</option>
+            <option value="2019">2019</option>
+          </select>
+          <button class="btn-add-indicator" onclick="showIndicatorModal()">+ Lägg till indikator</button>
+        </div>
+
+        <!-- Delregion legend -->
+        <div class="dr-legend">
+          <div class="dr-legend-item"><div class="dr-dot" style="background:#003D6B"></div>Göteborgsregionen</div>
+          <div class="dr-legend-item"><div class="dr-dot" style="background:#007B8A"></div>Fyrbodal</div>
+          <div class="dr-legend-item"><div class="dr-dot" style="background:#E8501A"></div>Sjuhärad</div>
+          <div class="dr-legend-item"><div class="dr-dot" style="background:#F18F01"></div>Skaraborg</div>
+        </div>
+
+        <!-- Chart area -->
+        <div class="chart-area" id="compareChartArea">
+          <div class="spinner-overlay hidden" id="compareSpinner">
+            <div class="spinner"></div>
+            <div class="spinner-text">Hämtar data från SCB…</div>
+          </div>
+          <div id="compareError" class="error-state" style="display:none">
+            <div class="error-icon">⚠️</div>
+            <div id="compareErrorMsg">Kunde inte hämta data.</div>
+          </div>
+          <canvas id="compareChart" style="max-height:500px;display:none"></canvas>
+          <div class="status-bar" id="compareStatus"></div>
+        </div>
+
+        <!-- Data table -->
+        <div class="compare-table-wrap" id="compareTableWrap" style="display:none">
+          <h4 id="compareTableTitle">Datatabell</h4>
+          <div class="table-wrap">
+            <table class="compare-table" id="compareTable">
+              <thead>
+                <tr>
+                  <th class="sortable" onclick="sortTable(0)">Kommun ↕</th>
+                  <th class="sortable" onclick="sortTable(1)">Delregion ↕</th>
+                  <th class="sortable" onclick="sortTable(2)">Värde ↕</th>
+                  <th class="sortable" onclick="sortTable(3)">vs. länssnitt ↕</th>
+                </tr>
+              </thead>
+              <tbody id="compareTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
 </main>
@@ -1065,6 +955,38 @@ console.log(data.data.map(d => ({ år: d.key[1], värde: d.values[0] })));</code
   Fakta Västra Götaland 2026 · VGR Analys · Avdelning samhällsanalys, Västra Götalandsregionen ·
   Alla rapporter: <strong>vgregion.se/faktavg</strong> · Kontakt: samhallsanalys@vgregion.se
 </footer>
+
+<!-- Modal -->
+<div class="modal-overlay hidden" id="indicatorModal" onclick="if(event.target===this)hideIndicatorModal()">
+  <div class="modal-box">
+    <h3>Kommande indikatorer</h3>
+    <p>Dessa indikatorer är planerade och kommer att kopplas mot respektive öppen datakälla.</p>
+    <ul class="coming-soon-list">
+      <li>
+        <div>
+          <div class="ind-name">Gymnasiebehörighet</div>
+          <div class="ind-api">Källa: Skolverket SIRIS – CSV/Excel nedladdning</div>
+        </div>
+        <span class="badge-soon">Kommer snart</span>
+      </li>
+      <li>
+        <div>
+          <div class="ind-name">Medelinkomst (tkr)</div>
+          <div class="ind-api">Källa: SCB – HE/HE0110 (IoT per region)</div>
+        </div>
+        <span class="badge-soon">Kommer snart</span>
+      </li>
+      <li>
+        <div>
+          <div class="ind-name">Sysselsättningsgrad</div>
+          <div class="ind-api">Källa: SCB – AM/AM0207 (RegionalArbetsmarknad)</div>
+        </div>
+        <span class="badge-soon">Kommer snart</span>
+      </li>
+    </ul>
+    <button class="modal-close" onclick="hideIndicatorModal()">Stäng</button>
+  </div>
+</div>
 
 <script>
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -1085,13 +1007,9 @@ function lineDefaults(labels, datasets) {
   return {
     type: 'line',
     data: { labels, datasets: datasets.map((d,i) => ({
-      borderWidth: 2.5,
-      pointRadius: 2,
-      tension: 0.35,
-      borderColor: COLORS[i],
-      backgroundColor: COLORS[i]+'20',
-      fill: false,
-      ...d
+      borderWidth: 2.5, pointRadius: 2, tension: 0.35,
+      borderColor: COLORS[i], backgroundColor: COLORS[i]+'20',
+      fill: false, ...d
     })) },
     options: {
       responsive: true, maintainAspectRatio: true,
@@ -1103,11 +1021,10 @@ function lineDefaults(labels, datasets) {
 
 function barDefaults(labels, datasets, opts={}) {
   return {
-    type: opts.horizontal ? 'bar' : 'bar',
+    type: 'bar',
     data: { labels, datasets: datasets.map((d,i) => ({
       backgroundColor: d.backgroundColor || COLORS[i % COLORS.length],
-      borderRadius: 4,
-      ...d
+      borderRadius: 4, ...d
     })) },
     options: {
       indexAxis: opts.horizontal ? 'y' : 'x',
@@ -1169,7 +1086,6 @@ new Chart('chartVarlden', {
 });
 
 // ── EKONOMI ──────────────────────────────────────────────────────────────────
-// Simplified KPIF index: key data points
 new Chart('chartInflation', lineDefaults(
   ['1988','1990','1992','1994','1996','1998','2000','2002','2004','2006','2008',
    '2010','2012','2014','2016','2018','2020','2021','2022','2023','2024','jan-2026'],
@@ -1177,8 +1093,7 @@ new Chart('chartInflation', lineDefaults(
     label: 'KPIF (% förändring)',
     data: [6.0, 10.4, 2.3, 2.5, 0.8, 0.6, 1.2, 2.3, 0.8, 1.5, 3.5,
            2.0, 1.0, 0.4, 1.4, 2.1, 0.5, 2.7, 8.5, 8.6, 2.3, 1.7],
-    fill: true,
-    backgroundColor: TEAL+'25'
+    fill: true, backgroundColor: TEAL+'25'
   }]
 ));
 
@@ -1286,6 +1201,488 @@ function show(id, btn) {
   document.getElementById(id).classList.add('visible');
   btn.classList.add('active');
 }
+
+// ════════════════════════════════════════════════════════
+// KOMMUNER TAB – SCB API DATA LAYER
+// ════════════════════════════════════════════════════════
+
+const SCB_BASE = 'https://api.scb.se/OV0104/v1/doris/sv/ssd/START/';
+
+async function scbPost(path, query) {
+  const key   = 'scb_cache_' + path.replace(/\//g,'_') + '_' + btoa(JSON.stringify(query)).slice(0,40);
+  const tsKey = 'scb_cache_ts_' + key;
+  const TTL   = 24 * 60 * 60 * 1000;
+  try {
+    const cached = localStorage.getItem(key);
+    const ts     = localStorage.getItem(tsKey);
+    if (cached && ts && (Date.now() - Number(ts)) < TTL) {
+      return { data: JSON.parse(cached), cached: true };
+    }
+  } catch(e) {}
+  const url = SCB_BASE + path;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(query)
+  });
+  if (!res.ok) throw new Error('SCB svarade med ' + res.status);
+  const json = await res.json();
+  try {
+    localStorage.setItem(key, JSON.stringify(json));
+    localStorage.setItem(tsKey, String(Date.now()));
+  } catch(e) {}
+  return { data: json, cached: false };
+}
+
+const VG_KOMMUNER = [
+  {kod:"1440",namn:"Ale",          delregion:"Göteborgsregionen"},
+  {kod:"1489",namn:"Alingsås",     delregion:"Göteborgsregionen"},
+  {kod:"1460",namn:"Bengtsfors",   delregion:"Fyrbodal"},
+  {kod:"1443",namn:"Bollebygd",    delregion:"Sjuhärad"},
+  {kod:"1490",namn:"Borås",        delregion:"Sjuhärad"},
+  {kod:"1438",namn:"Dals-Ed",      delregion:"Fyrbodal"},
+  {kod:"1445",namn:"Essunga",      delregion:"Skaraborg"},
+  {kod:"1499",namn:"Falköping",    delregion:"Skaraborg"},
+  {kod:"1439",namn:"Färgelanda",   delregion:"Fyrbodal"},
+  {kod:"1480",namn:"Göteborg",     delregion:"Göteborgsregionen"},
+  {kod:"1471",namn:"Götene",       delregion:"Skaraborg"},
+  {kod:"1444",namn:"Grästorp",     delregion:"Skaraborg"},
+  {kod:"1447",namn:"Gullspång",    delregion:"Skaraborg"},
+  {kod:"1401",namn:"Härryda",      delregion:"Göteborgsregionen"},
+  {kod:"1466",namn:"Herrljunga",   delregion:"Sjuhärad"},
+  {kod:"1497",namn:"Hjo",          delregion:"Skaraborg"},
+  {kod:"1446",namn:"Karlsborg",    delregion:"Skaraborg"},
+  {kod:"1482",namn:"Kungälv",      delregion:"Göteborgsregionen"},
+  {kod:"1441",namn:"Lerum",        delregion:"Göteborgsregionen"},
+  {kod:"1494",namn:"Lidköping",    delregion:"Skaraborg"},
+  {kod:"1462",namn:"Lilla Edet",   delregion:"Göteborgsregionen"},
+  {kod:"1484",namn:"Lysekil",      delregion:"Fyrbodal"},
+  {kod:"1463",namn:"Mark",         delregion:"Sjuhärad"},
+  {kod:"1493",namn:"Mariestad",    delregion:"Skaraborg"},
+  {kod:"1461",namn:"Mellerud",     delregion:"Fyrbodal"},
+  {kod:"1481",namn:"Mölndal",      delregion:"Göteborgsregionen"},
+  {kod:"1430",namn:"Munkedal",     delregion:"Fyrbodal"},
+  {kod:"1421",namn:"Orust",        delregion:"Fyrbodal"},
+  {kod:"1402",namn:"Partille",     delregion:"Göteborgsregionen"},
+  {kod:"1495",namn:"Skara",        delregion:"Skaraborg"},
+  {kod:"1496",namn:"Skövde",       delregion:"Skaraborg"},
+  {kod:"1427",namn:"Sotenäs",      delregion:"Fyrbodal"},
+  {kod:"1415",namn:"Stenungsund",  delregion:"Fyrbodal"},
+  {kod:"1486",namn:"Strömstad",    delregion:"Fyrbodal"},
+  {kod:"1465",namn:"Svenljunga",   delregion:"Sjuhärad"},
+  {kod:"1435",namn:"Tanum",        delregion:"Fyrbodal"},
+  {kod:"1498",namn:"Tidaholm",     delregion:"Skaraborg"},
+  {kod:"1419",namn:"Tjörn",        delregion:"Fyrbodal"},
+  {kod:"1452",namn:"Tranemo",      delregion:"Sjuhärad"},
+  {kod:"1488",namn:"Trollhättan",  delregion:"Fyrbodal"},
+  {kod:"1473",namn:"Töreboda",     delregion:"Skaraborg"},
+  {kod:"1491",namn:"Ulricehamn",   delregion:"Sjuhärad"},
+  {kod:"1485",namn:"Uddevalla",    delregion:"Fyrbodal"},
+  {kod:"1470",namn:"Vara",         delregion:"Skaraborg"},
+  {kod:"1442",namn:"Vårgårda",     delregion:"Sjuhärad"},
+  {kod:"1472",namn:"Tibro",        delregion:"Skaraborg"},
+  {kod:"1492",namn:"Åmål",         delregion:"Fyrbodal"},
+  {kod:"1407",namn:"Öckerö",       delregion:"Göteborgsregionen"},
+];
+
+const DR_COLORS = {
+  'Göteborgsregionen': '#003D6B',
+  'Fyrbodal':          '#007B8A',
+  'Sjuhärad':          '#E8501A',
+  'Skaraborg':         '#F18F01'
+};
+
+const DEFAULT_SELECTED = new Set(['1480','1490','1488','1485','1496']);
+let selectedKommuner = new Set(DEFAULT_SELECTED);
+
+// ── Build sidebar ──────────────────────────────────────────────────────────
+function buildKommunLista(filter) {
+  filter = filter || '';
+  const lista = document.getElementById('kommunLista');
+  const q = filter.toLowerCase();
+  const groups = {};
+  VG_KOMMUNER.forEach(function(k) {
+    if (q && !k.namn.toLowerCase().includes(q)) return;
+    if (!groups[k.delregion]) groups[k.delregion] = [];
+    groups[k.delregion].push(k);
+  });
+  const order = ['Göteborgsregionen','Fyrbodal','Sjuhärad','Skaraborg'];
+  lista.innerHTML = order.map(function(dr) {
+    if (!groups[dr] || groups[dr].length === 0) return '';
+    const items = groups[dr].map(function(k) {
+      return '<div class="kommune-item">' +
+        '<input type="checkbox" id="cb_' + k.kod + '" value="' + k.kod + '"' +
+        (selectedKommuner.has(k.kod) ? ' checked' : '') +
+        ' onchange="toggleKommun(\'' + k.kod + '\',this.checked)">' +
+        '<label for="cb_' + k.kod + '">' + k.namn + '</label>' +
+        '</div>';
+    }).join('');
+    return '<details class="delregion-group" open>' +
+      '<summary style="color:' + DR_COLORS[dr] + '">' + dr + ' (' + groups[dr].length + ')</summary>' +
+      items + '</details>';
+  }).join('');
+  updateSelectedCount();
+}
+
+function toggleKommun(kod, checked) {
+  if (checked) selectedKommuner.add(kod);
+  else selectedKommuner.delete(kod);
+  updateSelectedCount();
+  onControlChange();
+}
+
+function updateSelectedCount() {
+  document.getElementById('selectedCount').textContent = selectedKommuner.size + ' kommuner valda';
+}
+
+function filterKommuner(val) {
+  buildKommunLista(val);
+}
+
+function quickFilter(region, btn) {
+  document.querySelectorAll('.qf-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('kommunSearch').value = '';
+  if (region !== 'alla') {
+    selectedKommuner.clear();
+    VG_KOMMUNER.filter(function(k) { return k.delregion === region; })
+      .forEach(function(k) { selectedKommuner.add(k.kod); });
+  }
+  buildKommunLista('');
+  onControlChange();
+}
+
+// ── Indicator definitions ──────────────────────────────────────────────────
+
+const INDIKATORER = {
+  befolkning: {
+    label: 'Folkmängd (total)',
+    unit: 'personer',
+    fetch: async function(koder, year) {
+      const res = await scbPost('BE/BE0101/BE0101A/BefolkningNy', {
+        query: [
+          { code: 'Region',       selection: { filter: 'vs:RegionKommun07', values: koder } },
+          { code: 'Alder',        selection: { filter: 'item', values: ['tot'] } },
+          { code: 'Kon',          selection: { filter: 'item', values: ['1','2'] } },
+          { code: 'ContentsCode', selection: { filter: 'item', values: ['BE0101N1'] } },
+          { code: 'Tid',          selection: { filter: 'item', values: [String(year)] } }
+        ],
+        response: { format: 'json' }
+      });
+      const result = {};
+      res.data.data.forEach(function(row) {
+        const kod = row.key[0];
+        const val = parseFloat(row.values[0]);
+        result[kod] = (result[kod] || 0) + val;
+      });
+      return { result: result, cached: res.cached };
+    }
+  },
+
+  forandring: {
+    label: 'Befolkningsförändring (%)',
+    unit: '%',
+    fetch: async function(koder, year) {
+      const prevYear = String(+year - 1);
+      const res = await scbPost('BE/BE0101/BE0101A/BefolkningNy', {
+        query: [
+          { code: 'Region',       selection: { filter: 'vs:RegionKommun07', values: koder } },
+          { code: 'Alder',        selection: { filter: 'item', values: ['tot'] } },
+          { code: 'Kon',          selection: { filter: 'item', values: ['1','2'] } },
+          { code: 'ContentsCode', selection: { filter: 'item', values: ['BE0101N1'] } },
+          { code: 'Tid',          selection: { filter: 'item', values: [String(year), prevYear] } }
+        ],
+        response: { format: 'json' }
+      });
+      const byYear = {};
+      res.data.data.forEach(function(row) {
+        const kod = row.key[0]; const yr = row.key[4];
+        if (!byYear[yr]) byYear[yr] = {};
+        byYear[yr][kod] = (byYear[yr][kod] || 0) + parseFloat(row.values[0]);
+      });
+      const result = {};
+      koder.forEach(function(kod) {
+        const curr = (byYear[String(year)] || {})[kod];
+        const prev = (byYear[prevYear] || {})[kod];
+        if (curr != null && prev != null && prev !== 0) {
+          result[kod] = +((curr - prev) / prev * 100).toFixed(2);
+        }
+      });
+      return { result: result, cached: res.cached };
+    }
+  },
+
+  alder65: {
+    label: 'Andel 65+ år (%)',
+    unit: '%',
+    fallback: true,
+    fetch: async function(koder, year) {
+      const res = await scbPost('BE/BE0101/BE0101A/BefolkningNy', {
+        query: [
+          { code: 'Region',       selection: { filter: 'vs:RegionKommun07', values: koder } },
+          { code: 'Alder',        selection: { filter: 'agg:Ålder10år', values: ['65-69','70-74','75-79','80-84','85-89','90+','tot'] } },
+          { code: 'Kon',          selection: { filter: 'item', values: ['1','2'] } },
+          { code: 'ContentsCode', selection: { filter: 'item', values: ['BE0101N1'] } },
+          { code: 'Tid',          selection: { filter: 'item', values: [String(year)] } }
+        ],
+        response: { format: 'json' }
+      });
+      const totals = {}, over65 = {};
+      res.data.data.forEach(function(row) {
+        const kod = row.key[0]; const age = row.key[1];
+        const val = parseFloat(row.values[0]);
+        if (age === 'tot') totals[kod] = (totals[kod] || 0) + val;
+        else over65[kod] = (over65[kod] || 0) + val;
+      });
+      const result = {};
+      koder.forEach(function(kod) {
+        if (totals[kod] && totals[kod] > 0) result[kod] = +((over65[kod] || 0) / totals[kod] * 100).toFixed(1);
+      });
+      return { result: result, cached: res.cached };
+    }
+  },
+
+  alder017: {
+    label: 'Andel 0–17 år (%)',
+    unit: '%',
+    fallback: true,
+    fetch: async function(koder, year) {
+      const res = await scbPost('BE/BE0101/BE0101A/BefolkningNy', {
+        query: [
+          { code: 'Region',       selection: { filter: 'vs:RegionKommun07', values: koder } },
+          { code: 'Alder',        selection: { filter: 'agg:Ålder10år', values: ['0-9','10-19','tot'] } },
+          { code: 'Kon',          selection: { filter: 'item', values: ['1','2'] } },
+          { code: 'ContentsCode', selection: { filter: 'item', values: ['BE0101N1'] } },
+          { code: 'Tid',          selection: { filter: 'item', values: [String(year)] } }
+        ],
+        response: { format: 'json' }
+      });
+      const totals = {}, g09 = {}, g1019 = {};
+      res.data.data.forEach(function(row) {
+        const kod = row.key[0]; const age = row.key[1];
+        const val = parseFloat(row.values[0]);
+        if (age === 'tot') totals[kod] = (totals[kod] || 0) + val;
+        else if (age === '0-9') g09[kod] = (g09[kod] || 0) + val;
+        else if (age === '10-19') g1019[kod] = (g1019[kod] || 0) + val;
+      });
+      const result = {};
+      koder.forEach(function(kod) {
+        if (totals[kod] && totals[kod] > 0) {
+          const approx = (g09[kod] || 0) + (g1019[kod] || 0) * 0.8;
+          result[kod] = +(approx / totals[kod] * 100).toFixed(1);
+        }
+      });
+      return { result: result, cached: res.cached };
+    }
+  },
+
+  utrikesfodda: {
+    label: 'Andel utrikes födda (%)',
+    unit: '%',
+    fallback: true,
+    fetch: async function(koder, year) {
+      const [utRes, totRes] = await Promise.all([
+        scbPost('BE/BE0101/BE0101E/FoddaIEller', {
+          query: [
+            { code: 'Region',       selection: { filter: 'vs:RegionKommun07', values: koder } },
+            { code: 'ContentsCode', selection: { filter: 'item', values: ['BE0101E4'] } },
+            { code: 'Tid',          selection: { filter: 'item', values: [String(year)] } }
+          ],
+          response: { format: 'json' }
+        }),
+        scbPost('BE/BE0101/BE0101A/BefolkningNy', {
+          query: [
+            { code: 'Region',       selection: { filter: 'vs:RegionKommun07', values: koder } },
+            { code: 'Alder',        selection: { filter: 'item', values: ['tot'] } },
+            { code: 'Kon',          selection: { filter: 'item', values: ['1','2'] } },
+            { code: 'ContentsCode', selection: { filter: 'item', values: ['BE0101N1'] } },
+            { code: 'Tid',          selection: { filter: 'item', values: [String(year)] } }
+          ],
+          response: { format: 'json' }
+        })
+      ]);
+      const utCounts = {};
+      utRes.data.data.forEach(function(row) { utCounts[row.key[0]] = parseFloat(row.values[0]); });
+      const totCounts = {};
+      totRes.data.data.forEach(function(row) {
+        const kod = row.key[0];
+        totCounts[kod] = (totCounts[kod] || 0) + parseFloat(row.values[0]);
+      });
+      const result = {};
+      koder.forEach(function(kod) {
+        if (totCounts[kod] && totCounts[kod] > 0 && utCounts[kod] != null) {
+          result[kod] = +(utCounts[kod] / totCounts[kod] * 100).toFixed(1);
+        }
+      });
+      return { result: result, cached: utRes.cached && totRes.cached };
+    }
+  }
+};
+
+// ── Chart instance ─────────────────────────────────────────────────────────
+let compareChartInstance = null;
+
+async function onControlChange() {
+  const indId = document.getElementById('indikatorSelect').value;
+  const year  = parseInt(document.getElementById('yearSelect').value);
+  const koder = Array.from(selectedKommuner);
+
+  if (koder.length === 0) {
+    showCompareError('Välj minst en kommun för att visa data.');
+    return;
+  }
+
+  showSpinner(true);
+  clearCompareError();
+
+  const ind = INDIKATORER[indId];
+  let result, wasCached;
+
+  try {
+    const res = await ind.fetch(koder, year);
+    result    = res.result;
+    wasCached = res.cached;
+  } catch(err) {
+    showSpinner(false);
+    showCompareError('⚠️ Kunde inte hämta data från SCB. Kontrollera nätverksanslutningen. (' + err.message + ')');
+    return;
+  }
+
+  showSpinner(false);
+
+  const entries = koder
+    .filter(function(k) { return result[k] != null; })
+    .map(function(k) {
+      const info = VG_KOMMUNER.find(function(v) { return v.kod === k; });
+      return { kod: k, namn: info.namn, delregion: info.delregion, value: result[k] };
+    })
+    .sort(function(a, b) { return b.value - a.value; });
+
+  if (entries.length === 0) {
+    showCompareError('Ingen data tillgänglig för vald indikator och år.');
+    return;
+  }
+
+  const avg = entries.reduce(function(s, e) { return s + e.value; }, 0) / entries.length;
+
+  const canv = document.getElementById('compareChart');
+  canv.style.display = 'block';
+
+  if (compareChartInstance) { compareChartInstance.destroy(); compareChartInstance = null; }
+
+  const many = entries.length > 10;
+  compareChartInstance = new Chart(canv, {
+    type: 'bar',
+    data: {
+      labels: entries.map(function(e) { return e.namn; }),
+      datasets: [{
+        label: ind.label,
+        data: entries.map(function(e) { return e.value; }),
+        backgroundColor: entries.map(function(e) { return DR_COLORS[e.delregion] + 'CC'; }),
+        borderColor:     entries.map(function(e) { return DR_COLORS[e.delregion]; }),
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const e = entries[ctx.dataIndex];
+              const diff = ((e.value - avg) / Math.abs(avg) * 100).toFixed(1);
+              const sign = diff >= 0 ? '+' : '';
+              return ind.label + ': ' + fmtVal(e.value, ind.unit) + '  (' + sign + diff + '% vs snitt)';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { color: '#E5E7EB' }, ticks: { font: { size: many ? 10 : 12 } } },
+        y: { grid: { display: false },   ticks: { font: { size: many ? 10 : 12 } } }
+      }
+    }
+  });
+
+  const h = Math.max(300, entries.length * 32);
+  canv.parentElement.style.minHeight = h + 'px';
+  canv.style.maxHeight = Math.min(h, 500) + 'px';
+
+  const ts = new Date().toLocaleTimeString('sv-SE');
+  const statusEl = document.getElementById('compareStatus');
+  if (wasCached) {
+    statusEl.innerHTML = '📦 Cachad data &nbsp;·&nbsp; Källa: SCB PxWeb API';
+  } else {
+    statusEl.innerHTML = '⚡ Live &nbsp;·&nbsp; Källa: SCB PxWeb API &nbsp;·&nbsp; Hämtad: ' + ts;
+  }
+
+  renderCompareTable(entries, avg, ind);
+}
+
+function fmtVal(v, unit) {
+  if (unit === 'personer') return v.toLocaleString('sv-SE');
+  return v.toLocaleString('sv-SE', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' ' + unit;
+}
+
+function renderCompareTable(entries, avg, ind) {
+  document.getElementById('compareTableWrap').style.display = 'block';
+  document.getElementById('compareTableTitle').textContent = ind.label + ' per kommun';
+  const tbody = document.getElementById('compareTableBody');
+  tbody.innerHTML = entries.map(function(e) {
+    const diff = avg !== 0 ? ((e.value - avg) / Math.abs(avg) * 100) : 0;
+    const sign = diff >= 0 ? '+' : '';
+    const cls  = diff >= 0 ? 'vs-positive' : 'vs-negative';
+    return '<tr><td>' + e.namn + '</td>' +
+      '<td><span style="display:inline-flex;align-items:center;gap:.4rem">' +
+      '<span style="width:10px;height:10px;border-radius:50%;background:' + DR_COLORS[e.delregion] + ';display:inline-block"></span>' +
+      e.delregion + '</span></td>' +
+      '<td>' + fmtVal(e.value, ind.unit) + '</td>' +
+      '<td class="' + cls + '">' + sign + diff.toFixed(1) + '%</td></tr>';
+  }).join('') +
+  '<tr style="font-weight:700;background:var(--vgr-light)">' +
+  '<td colspan="2">Länssnitt (valda kommuner)</td>' +
+  '<td>' + fmtVal(avg, ind.unit) + '</td><td>—</td></tr>';
+}
+
+let sortDir = {};
+function sortTable(col) {
+  const tbody = document.getElementById('compareTableBody');
+  const rows  = Array.from(tbody.querySelectorAll('tr:not(:last-child)'));
+  const dir   = sortDir[col] === 'asc' ? 'desc' : 'asc';
+  sortDir[col] = dir;
+  rows.sort(function(a, b) {
+    const av = a.cells[col].textContent.trim();
+    const bv = b.cells[col].textContent.trim();
+    const an = parseFloat(av.replace(/[^\d.,\-+]/g,'').replace(',','.'));
+    const bn = parseFloat(bv.replace(/[^\d.,\-+]/g,'').replace(',','.'));
+    if (!isNaN(an) && !isNaN(bn)) return dir === 'asc' ? an - bn : bn - an;
+    return dir === 'asc' ? av.localeCompare(bv,'sv') : bv.localeCompare(av,'sv');
+  });
+  const lastRow = tbody.lastElementChild;
+  rows.forEach(function(r) { tbody.insertBefore(r, lastRow); });
+}
+
+function showSpinner(on) {
+  document.getElementById('compareSpinner').classList.toggle('hidden', !on);
+}
+function showCompareError(msg) {
+  document.getElementById('compareError').style.display = 'block';
+  document.getElementById('compareErrorMsg').textContent = msg;
+  document.getElementById('compareChart').style.display = 'none';
+  document.getElementById('compareTableWrap').style.display = 'none';
+}
+function clearCompareError() {
+  document.getElementById('compareError').style.display = 'none';
+}
+function showIndicatorModal()  { document.getElementById('indicatorModal').classList.remove('hidden'); }
+function hideIndicatorModal()  { document.getElementById('indicatorModal').classList.add('hidden'); }
+
+// ── Init ───────────────────────────────────────────────────────────────────
+buildKommunLista('');
 </script>
 </body>
 </html>
