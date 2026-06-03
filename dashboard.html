@@ -240,6 +240,12 @@
       margin-top: 3rem;
     }
 
+    /* ─── LINKS ─── */
+    a { color: var(--vgr-teal); text-decoration: none; font-weight: 500; }
+    a:hover { color: var(--vgr-blue); text-decoration: underline; }
+
+    pre code { font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; }
+
     @media (max-width: 640px) {
       .chart-grid { grid-template-columns: 1fr; }
       .kpi-grid   { grid-template-columns: 1fr 1fr; }
@@ -266,6 +272,7 @@
   <button onclick="show('utbildning',this)">📚 Utbildning</button>
   <button onclick="show('naringsliv',this)">🏭 Näringsliv</button>
   <button onclick="show('kollektivtrafik',this)">🚆 Kollektivtrafik</button>
+  <button onclick="show('kallor',this)">🔗 Datakällor</button>
 </nav>
 
 <main>
@@ -572,6 +579,484 @@
         <canvas id="chartCykel"></canvas>
       </div>
     </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       DATAKÄLLOR
+  ═══════════════════════════════════════════════ -->
+  <section id="kallor" class="section">
+    <div class="section-header">
+      <h2>Datakällor och API-kopplingar</h2>
+      <p>Alla datakällor som används i rapporten Fakta Västra Götaland 2026. De flesta är öppna och maskinläsbara via API. Klicka på länkarna för direktåtkomst till data, API-dokumentation eller nedladdningssidor.</p>
+    </div>
+
+    <div class="info-box">
+      <strong>Tips för vidareutveckling:</strong> SCB:s PxWeb-API och Skolverkets öppna statistik är de rikaste källorna och täcker merparten av diagrammen i denna dashboard. Eurostat och Trafikanalys har REST-API:er med JSON-svar. Nordregio, VGR:s befolkningsprognos och Kollektivtrafikbarometern är tillgängliga som Excel/CSV-nedladdning.
+    </div>
+
+    <!-- SCB -->
+    <div class="chart-card" style="margin-bottom:1.5rem">
+      <h3>📊 SCB – Statistiska centralbyrån</h3>
+      <div class="chart-source">Primärkälla för befolkning, ekonomi, utbildning, näringsliv och arbetsmarknad</div>
+      <div class="table-wrap" style="margin-top:.75rem">
+        <table>
+          <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>API / Nedladdning</th><th>Format</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Befolkning per kommun, ålder, kön</td>
+              <td>Demografi</td>
+              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__BE__BE0101__BE0101A/BefolkningNy/" target="_blank">PxWeb API – BE0101</a></td>
+              <td>JSON/CSV/px</td>
+            </tr>
+            <tr>
+              <td>Summerat fruktsamhetstal (TFR)</td>
+              <td>Demografi</td>
+              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__BE__BE0701__BE0701A/SumFruktsamhetK/" target="_blank">PxWeb API – BE0701</a></td>
+              <td>JSON/CSV/px</td>
+            </tr>
+            <tr>
+              <td>Inrikes och utrikes omflyttning</td>
+              <td>Demografi</td>
+              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__BE__BE0101__BE0101J/Flyttningar97/" target="_blank">PxWeb API – BE0101J</a></td>
+              <td>JSON/CSV/px</td>
+            </tr>
+            <tr>
+              <td>Bruttoregionalprodukt (BRP) per capita per län</td>
+              <td>Ekonomi</td>
+              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__NR__NR0105__NR0105A/NR0105ENS2010T05A/" target="_blank">PxWeb API – NR0105</a></td>
+              <td>JSON/CSV/px</td>
+            </tr>
+            <tr>
+              <td>KPIF – konsumentprisindex med fast ränta</td>
+              <td>Ekonomi</td>
+              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__PR__PR0101__PR0101A/KPIfastindex07/" target="_blank">PxWeb API – PR0101</a></td>
+              <td>JSON/CSV/px</td>
+            </tr>
+            <tr>
+              <td>Reallön, löneutveckling</td>
+              <td>Ekonomi</td>
+              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__AM__AM0302/" target="_blank">PxWeb API – AM0302</a></td>
+              <td>JSON/CSV/px</td>
+            </tr>
+            <tr>
+              <td>Sociala ersättningar och bidrag</td>
+              <td>Ekonomi</td>
+              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__HE__HE0110/" target="_blank">PxWeb API – HE0110</a></td>
+              <td>JSON/CSV/px</td>
+            </tr>
+            <tr>
+              <td>Befolkningens utbildningsnivå per region, kön, ålder</td>
+              <td>Utbildning</td>
+              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__UF__UF0506/" target="_blank">PxWeb API – UF0506</a></td>
+              <td>JSON/CSV/px</td>
+            </tr>
+            <tr>
+              <td>Sysselsättning per bransch och region</td>
+              <td>Näringsliv</td>
+              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__AM__AM0207/" target="_blank">PxWeb API – AM0207</a></td>
+              <td>JSON/CSV/px</td>
+            </tr>
+            <tr>
+              <td>FoU-utgifter per sektor och region</td>
+              <td>Näringsliv, Ekonomi</td>
+              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__UF__UF0301/" target="_blank">PxWeb API – UF0301</a></td>
+              <td>JSON/CSV/px</td>
+            </tr>
+            <tr>
+              <td>Patentansökningar per region</td>
+              <td>Näringsliv</td>
+              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__IP__IP0301/" target="_blank">PxWeb API – IP0301</a></td>
+              <td>JSON/CSV/px</td>
+            </tr>
+            <tr>
+              <td>Personbilar per region</td>
+              <td>Kollektivtrafik</td>
+              <td><a href="https://www.statistikdatabasen.scb.se/pxweb/sv/ssd/START__TK__TK1001__TK1001A/PersBilarDrivMedel/" target="_blank">PxWeb API – TK1001</a></td>
+              <td>JSON/CSV/px</td>
+            </tr>
+            <tr>
+              <td>SCB PxWeb – generell API-dokumentation</td>
+              <td>Alla områden</td>
+              <td><a href="https://www.scb.se/vara-tjanster/oppna-data/api-for-statistikdatabasen/" target="_blank">scb.se – API-dokumentation</a></td>
+              <td>JSON / REST</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Skolverket -->
+    <div class="chart-card" style="margin-bottom:1.5rem">
+      <h3>📚 Skolverket</h3>
+      <div class="chart-source">Primärkälla för gymnasiebehörighet, sökande, antagning och genomströmning</div>
+      <div class="table-wrap" style="margin-top:.75rem">
+        <table>
+          <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>API / Nedladdning</th><th>Format</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Gymnasiebehörighet åk 9 per kommun och år</td>
+              <td>Utbildning</td>
+              <td><a href="https://www.skolverket.se/skolutveckling/statistik/sok-statistik-om-forskola-skola-och-vuxenutbildning?sok=SiRiS&omrade=Grundskola&lasar=2024-25&typ=Riksniva&id=3002" target="_blank">Skolverkets statistikdatabas – SIRIS</a></td>
+              <td>Excel / CSV</td>
+            </tr>
+            <tr>
+              <td>Sökande och antagna gymnasiet per program och kön</td>
+              <td>Utbildning</td>
+              <td><a href="https://www.skolverket.se/skolutveckling/statistik/sok-statistik-om-forskola-skola-och-vuxenutbildning?sok=SiRiS&omrade=Gymnasieskola" target="_blank">Skolverkets statistikdatabas – Gymnasiet</a></td>
+              <td>Excel / CSV</td>
+            </tr>
+            <tr>
+              <td>Komvux – elever per program, region, kön</td>
+              <td>Utbildning</td>
+              <td><a href="https://www.skolverket.se/skolutveckling/statistik/sok-statistik-om-forskola-skola-och-vuxenutbildning?sok=SiRiS&omrade=Komvux" target="_blank">Skolverkets statistikdatabas – Komvux</a></td>
+              <td>Excel / CSV</td>
+            </tr>
+            <tr>
+              <td>Skolverkets öppna data (maskinläsbart)</td>
+              <td>Utbildning</td>
+              <td><a href="https://www.skolverket.se/skolutveckling/statistik/om-skolverkets-statistik/oppna-data" target="_blank">skolverket.se/oppna-data</a></td>
+              <td>JSON / CSV / API</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- UHR + UKÄ -->
+    <div class="chart-card" style="margin-bottom:1.5rem">
+      <h3>🎓 UHR & UKÄ – Högskoleverket och Universitetskanslersämbetet</h3>
+      <div class="chart-source">Antagning, antal studenter, examinationsgrad vid högskola/universitet</div>
+      <div class="table-wrap" style="margin-top:.75rem">
+        <table>
+          <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>Länk</th><th>Format</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Antagning till högre utbildning per program och lärosäte</td>
+              <td>Utbildning</td>
+              <td><a href="https://www.uhr.se/studier-och-antagning/antagningsstatistik/" target="_blank">uhr.se – Antagningsstatistik</a></td>
+              <td>Excel / PDF</td>
+            </tr>
+            <tr>
+              <td>Helårsstudenter och examina per lärosäte och region</td>
+              <td>Utbildning</td>
+              <td><a href="https://www.uka.se/statistik--analys/statistik/statistik-om-hogre-utbildning.html" target="_blank">uka.se – Statistik om högre utbildning</a></td>
+              <td>Excel / CSV</td>
+            </tr>
+            <tr>
+              <td>UKÄ:s statistikdatabas (öppen data)</td>
+              <td>Utbildning</td>
+              <td><a href="https://www.uka.se/statistik--analys/statistik/statistikdatabasen.html" target="_blank">uka.se – Statistikdatabasen</a></td>
+              <td>Excel / CSV</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MYH -->
+    <div class="chart-card" style="margin-bottom:1.5rem">
+      <h3>🏫 MYH – Myndigheten för yrkeshögskolan</h3>
+      <div class="chart-source">YH-utbildningar, antagna, examinationsgrad per område och region</div>
+      <div class="table-wrap" style="margin-top:.75rem">
+        <table>
+          <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>Länk</th><th>Format</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Statistik om yrkeshögskolan per region och område</td>
+              <td>Utbildning</td>
+              <td><a href="https://www.myh.se/statistik-och-analys/statistik-om-yrkeshogskolan/" target="_blank">myh.se – Statistik YH</a></td>
+              <td>Excel / CSV</td>
+            </tr>
+            <tr>
+              <td>MYH:s öppna data</td>
+              <td>Utbildning</td>
+              <td><a href="https://www.myh.se/statistik-och-analys/oppna-data/" target="_blank">myh.se – Öppna data</a></td>
+              <td>JSON / CSV</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Eurostat + FN -->
+    <div class="chart-card" style="margin-bottom:1.5rem">
+      <h3>🌍 Eurostat & FN</h3>
+      <div class="chart-source">Internationell jämförelsedata för demografi, ekonomi och utbildning</div>
+      <div class="table-wrap" style="margin-top:.75rem">
+        <table>
+          <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>API / Länk</th><th>Format</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Fruktsamhetstal (TFR) per land – Norden och Europa</td>
+              <td>Demografi</td>
+              <td><a href="https://ec.europa.eu/eurostat/databrowser/view/demo_find/default/table" target="_blank">Eurostat – demo_find (fertility)</a></td>
+              <td>JSON/SDMX REST API</td>
+            </tr>
+            <tr>
+              <td>Befolkning per ålder och kön, EU-länder</td>
+              <td>Demografi</td>
+              <td><a href="https://ec.europa.eu/eurostat/databrowser/view/demo_pjanind/default/table" target="_blank">Eurostat – demo_pjanind</a></td>
+              <td>JSON/SDMX REST API</td>
+            </tr>
+            <tr>
+              <td>Eurostat REST API – generell dokumentation</td>
+              <td>Demografi, Ekonomi</td>
+              <td><a href="https://ec.europa.eu/eurostat/web/json-and-unicode-web-services/getting-started/rest-request" target="_blank">ec.europa.eu – Eurostat API</a></td>
+              <td>JSON / SDMX</td>
+            </tr>
+            <tr>
+              <td>FN:s befolkningsprognoser (World Population Prospects)</td>
+              <td>Demografi</td>
+              <td><a href="https://population.un.org/wpp/Download/Standard/MostUsed/" target="_blank">population.un.org – WPP 2024</a></td>
+              <td>Excel / CSV</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Nordregio -->
+    <div class="chart-card" style="margin-bottom:1.5rem">
+      <h3>🗺️ Nordregio</h3>
+      <div class="chart-source">Nordisk regional statistik och befolkningskartor</div>
+      <div class="table-wrap" style="margin-top:.75rem">
+        <table>
+          <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>Länk</th><th>Format</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Befolkningsförändring per nordisk kommun 1990–2022</td>
+              <td>Demografi</td>
+              <td><a href="https://nordregio.org/nordregio-report/rethinking-population-shrinkage/" target="_blank">nordregio.org – Population shrinkage report</a></td>
+              <td>PDF / kartdata</td>
+            </tr>
+            <tr>
+              <td>Nordregio Statistics – öppna regiondata Norden</td>
+              <td>Demografi</td>
+              <td><a href="https://nordregio.org/statistics/" target="_blank">nordregio.org/statistics</a></td>
+              <td>CSV / Excel</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Trafikverket + Transportstyrelsen + Trafikanalys -->
+    <div class="chart-card" style="margin-bottom:1.5rem">
+      <h3>🚗 Trafikverket, Transportstyrelsen & Trafikanalys</h3>
+      <div class="chart-source">Vägtrafik, järnväg, godsflöden, trängselskatt och kollektivtrafik</div>
+      <div class="table-wrap" style="margin-top:.75rem">
+        <table>
+          <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>Länk</th><th>Format</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Årsmedeldygnstrafik (AADT) per vägsträcka – NVDB</td>
+              <td>Kollektivtrafik</td>
+              <td><a href="https://nvdb.trafikverket.se/SeEgenskaperAPI/api/v1/datakatalogen" target="_blank">NVDB API – Trafikverket</a></td>
+              <td>REST / GeoJSON</td>
+            </tr>
+            <tr>
+              <td>Järnvägens kapacitetsutnyttjande</td>
+              <td>Kollektivtrafik</td>
+              <td><a href="https://www.trafikverket.se/contentassets/08d5f84cc6c944d4a3adb78cbeff7e66/kapacitetsutredning_2024.pdf" target="_blank">Trafikverket – kapacitetsutredning</a></td>
+              <td>PDF</td>
+            </tr>
+            <tr>
+              <td>Trängselskatt Göteborg – antal passager per år</td>
+              <td>Kollektivtrafik</td>
+              <td><a href="https://www.transportstyrelsen.se/sv/vagtrafik/trangselskatt/statistik-trangselskatt/" target="_blank">Transportstyrelsen – trängselskattstatistik</a></td>
+              <td>Excel / PDF</td>
+            </tr>
+            <tr>
+              <td>Godsstatistik – Göteborgs hamn, sjöfart</td>
+              <td>Kollektivtrafik</td>
+              <td><a href="https://www.trafa.se/sjofart/godsstatistik/" target="_blank">Trafikanalys – godsstatistik</a></td>
+              <td>Excel / CSV</td>
+            </tr>
+            <tr>
+              <td>Körsträcka personbil per region</td>
+              <td>Kollektivtrafik</td>
+              <td><a href="https://www.trafa.se/vag/korsträckor/" target="_blank">Trafikanalys – körsträckor</a></td>
+              <td>Excel / CSV</td>
+            </tr>
+            <tr>
+              <td>Trafikanalys öppna data</td>
+              <td>Kollektivtrafik</td>
+              <td><a href="https://www.trafa.se/om-trafikanalys/oppna-data/" target="_blank">trafa.se – Öppna data</a></td>
+              <td>CSV / Excel / API</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Västtrafik + Kollektivtrafikbarometern -->
+    <div class="chart-card" style="margin-bottom:1.5rem">
+      <h3>🚌 Västtrafik & Kollektivtrafikbarometern</h3>
+      <div class="chart-source">Regional kollektivtrafik, marknadsandel, kundnöjdhet och resmönster</div>
+      <div class="table-wrap" style="margin-top:.75rem">
+        <table>
+          <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>Länk</th><th>Format</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Västtrafik öppna data – tidtabeller, linjer, hållplatser</td>
+              <td>Kollektivtrafik</td>
+              <td><a href="https://www.vasttrafik.se/om-vasttrafik/appar-och-open-data/vasttrafiks-open-data/" target="_blank">vasttrafik.se – Open data</a></td>
+              <td>REST API / GTFS</td>
+            </tr>
+            <tr>
+              <td>Västtrafik API (reseplanerare, avgångar)</td>
+              <td>Kollektivtrafik</td>
+              <td><a href="https://developer.vasttrafik.se/" target="_blank">developer.vasttrafik.se</a></td>
+              <td>REST / OAuth2</td>
+            </tr>
+            <tr>
+              <td>Kollektivtrafikbarometern – marknadsandel, kundnöjdhet per region</td>
+              <td>Kollektivtrafik</td>
+              <td><a href="https://www.trafikverket.se/contentassets/kollektivtrafikbarometern" target="_blank">Trafikverket – Kollektivtrafikbarometern</a></td>
+              <td>Excel / PDF</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Riksbanken + Konjunkturinstitutet -->
+    <div class="chart-card" style="margin-bottom:1.5rem">
+      <h3>💹 Riksbanken & Konjunkturinstitutet</h3>
+      <div class="chart-source">Styrränta, inflation, konjunktur och makroekonomiska indikatorer</div>
+      <div class="table-wrap" style="margin-top:.75rem">
+        <table>
+          <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>Länk</th><th>Format</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>KPIF och KPI – månadsdata</td>
+              <td>Ekonomi</td>
+              <td><a href="https://www.riksbanken.se/sv/statistik/data-och-statistik/inflation/" target="_blank">riksbanken.se – inflationsdata</a></td>
+              <td>Excel / CSV</td>
+            </tr>
+            <tr>
+              <td>Riksbankens statistikdatabas (SESDATA)</td>
+              <td>Ekonomi</td>
+              <td><a href="https://www.riksbanken.se/sv/statistik/data-och-statistik/riksbankens-statistikdatabas/" target="_blank">SESDATA – Riksbankens API</a></td>
+              <td>REST / JSON / CSV</td>
+            </tr>
+            <tr>
+              <td>Konjunkturbarometer och BNP-prognos</td>
+              <td>Ekonomi</td>
+              <td><a href="https://www.konj.se/statistik/konjunkturbarometern.html" target="_blank">konj.se – Konjunkturbarometern</a></td>
+              <td>Excel / CSV</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EC Regional Innovation + Swecris -->
+    <div class="chart-card" style="margin-bottom:1.5rem">
+      <h3>🔬 Innovation & Forskning</h3>
+      <div class="chart-source">Regional innovationsindex, EU-finansiering, FoU och forskningssamverkan</div>
+      <div class="table-wrap" style="margin-top:.75rem">
+        <table>
+          <thead><tr><th>Dataset / Variabel</th><th>Används i</th><th>Länk</th><th>Format</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Regional Innovation Scoreboard 2025</td>
+              <td>Näringsliv</td>
+              <td><a href="https://ec.europa.eu/docsroom/documents/57936" target="_blank">European Commission – RIS 2025</a></td>
+              <td>Excel / PDF</td>
+            </tr>
+            <tr>
+              <td>Horisont Europa – deltagande per region</td>
+              <td>Näringsliv</td>
+              <td><a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/horizon-results-platform" target="_blank">EC Horizon Results Platform</a></td>
+              <td>JSON / CSV</td>
+            </tr>
+            <tr>
+              <td>Swecris – svensk forskningsfinansiering</td>
+              <td>Näringsliv</td>
+              <td><a href="https://www.swecris.se" target="_blank">swecris.se</a></td>
+              <td>Webbsök / CSV</td>
+            </tr>
+            <tr>
+              <td>RISE – test- och demonstrationsmiljöer</td>
+              <td>Näringsliv</td>
+              <td><a href="https://www.ri.se/sv/erbjudande/utveckla-skala-upp/testdemonstrationsmiljoer" target="_blank">ri.se – testmiljöer</a></td>
+              <td>Webb</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VGR egna källor -->
+    <div class="chart-card" style="margin-bottom:1.5rem">
+      <h3>📋 VGR – Västra Götalandsregionens egna underlag</h3>
+      <div class="chart-source">Rapporter, befolkningsprognos och företagsdatabas</div>
+      <div class="table-wrap" style="margin-top:.75rem">
+        <table>
+          <thead><tr><th>Rapport / Dataset</th><th>Används i</th><th>Länk</th><th>Format</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Fakta Västra Götaland 2026 – alla underlagsrapporter</td>
+              <td>Alla</td>
+              <td><a href="https://www.vgregion.se/faktavg" target="_blank">vgregion.se/faktavg</a></td>
+              <td>PDF</td>
+            </tr>
+            <tr>
+              <td>VGR Befolkningsprognos 2025</td>
+              <td>Demografi</td>
+              <td><a href="https://www.vgregion.se/regional-utveckling/statistik-och-analys/befolkningsprognoser/" target="_blank">vgregion.se – befolkningsprognoser</a></td>
+              <td>Excel / PDF</td>
+            </tr>
+            <tr>
+              <td>VGR Konjunkturläget – kvartalsvisa rapporter</td>
+              <td>Ekonomi</td>
+              <td><a href="https://www.vgregion.se/regional-utveckling/statistik-och-analys/konjunktur/" target="_blank">vgregion.se – konjunktur</a></td>
+              <td>PDF</td>
+            </tr>
+            <tr>
+              <td>VGR:s företagsdatabas (Dun &amp; Bradstreet)</td>
+              <td>Näringsliv</td>
+              <td><a href="https://www.vgregion.se/regional-utveckling/statistik-och-analys/" target="_blank">vgregion.se – samhällsanalys</a></td>
+              <td>Intern (D&amp;B)</td>
+            </tr>
+            <tr>
+              <td>Kontakt samhällsanalys</td>
+              <td>Alla</td>
+              <td><a href="mailto:samhallsanalys@vgregion.se">samhallsanalys@vgregion.se</a></td>
+              <td>E-post</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Snabbguide SCB API -->
+    <div class="chart-card" style="margin-bottom:1.5rem">
+      <h3>⚡ Snabbguide: Hämta data från SCB PxWeb API</h3>
+      <div class="chart-source">Exempel på hur man anropar SCB:s öppna API direkt i JavaScript</div>
+      <pre style="background:var(--gray-800);color:#e2e8ef;padding:1.25rem;border-radius:8px;font-size:.8rem;overflow-x:auto;margin-top:.75rem;line-height:1.6"><code>// Hämta fruktsamhetstal för Sverige från SCB PxWeb API
+const url = "https://api.scb.se/OV0104/v1/doris/sv/ssd/START/BE/BE0701/BE0701A/SumFruktsamhetK";
+
+const query = {
+  "query": [
+    { "code": "Region", "selection": { "filter": "vs:RegionLan", "values": ["14"] } },
+    { "code": "Tid",    "selection": { "filter": "item",         "values": ["2020","2021","2022","2023"] } }
+  ],
+  "response": { "format": "json" }
+};
+
+const response = await fetch(url, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(query)
+});
+const data = await response.json();
+// data.data[] innehåller värdena per år
+console.log(data.data.map(d => ({ år: d.key[1], värde: d.values[0] })));</code></pre>
+    </div>
+
   </section>
 
 </main>
