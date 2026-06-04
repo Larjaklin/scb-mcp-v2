@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fakta Västra Götaland 2026</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <script src="./chart.umd.min.js"></script>
   <style>
     :root {
       --vgr-blue:   #003D6B;
@@ -1207,11 +1207,50 @@ function show(id, btn) {
 // ════════════════════════════════════════════════════════
 
 const SCB_BASE = 'https://api.scb.se/OV0104/v1/doris/sv/ssd/START/';
+const TTL = 24 * 60 * 60 * 1000;
+
+// ── Parse PxWeb JSON → array of plain objects ──────────────────────────────
+// PxWeb response: { columns: [{code,type},...], data: [{key:[...], values:[...]},...] }
+// Dimension cols (type 'd' or 't') map to key[i]; content cols (type 'c') map to values[i].
+function pxParse(response) {
+  const cols = response.columns || [];
+  const dims = cols.filter(function(c) { return c.type !== 'c'; });
+  const cnts = cols.filter(function(c) { return c.type === 'c'; });
+  return (response.data || []).map(function(row) {
+    var o = {};
+    dims.forEach(function(c, i) { o[c.code] = row.key[i]; });
+    cnts.forEach(function(c, i) { o[c.code] = parseFloat(row.values[i]) || 0; });
+    return o;
+  });
+}
+
+// ── Fetch table metadata (variables + available values) ────────────────────
+var _metaCache = {};
+async function scbMeta(path) {
+  if (_metaCache[path]) return _metaCache[path];
+  var ck = 'scb_meta_' + path.replace(/\//g,'_'), ts = 'scb_meta_ts_' + ck;
+  try {
+    var c = localStorage.getItem(ck), t = localStorage.getItem(ts);
+    if (c && t && (Date.now() - Number(t)) < TTL) {
+      _metaCache[path] = JSON.parse(c); return _metaCache[path];
+    }
+  } catch(e) {}
+  var r = await fetch(SCB_BASE + path);
+  if (!r.ok) throw new Error('SCB meta ' + r.status);
+  var d = await r.json();
+  try { localStorage.setItem(ck, JSON.stringify(d)); localStorage.setItem(ts, String(Date.now())); } catch(e) {}
+  _metaCache[path] = d;
+  return d;
+}
+
+function metaValues(meta, code) {
+  var v = (meta.variables || []).find(function(v) { return v.code === code; });
+  return v ? v.values : [];
+}
 
 async function scbPost(path, query) {
-  const key   = 'scb_cache_' + path.replace(/\//g,'_') + '_' + btoa(JSON.stringify(query)).slice(0,40);
+  const key   = 'scb_cache_' + path.replace(/\//g,'_') + '_' + btoa(unescape(encodeURIComponent(JSON.stringify(query)))).slice(0,48);
   const tsKey = 'scb_cache_ts_' + key;
-  const TTL   = 24 * 60 * 60 * 1000;
   try {
     const cached = localStorage.getItem(key);
     const ts     = localStorage.getItem(tsKey);
@@ -1354,28 +1393,46 @@ function quickFilter(region, btn) {
 
 // ── Indicator definitions ──────────────────────────────────────────────────
 
+// ── Shared population query builder ───────────────────────────────────────
+const POP_TABLE = 'BE/BE0101/BE0101A/BefolkningNy';
+
+function popQuery(koder, ageValues, years) {
+  return {
+    query: [
+      { code: 'Region',       selection: { filter: 'vs:RegionKommun07', values: koder } },
+      { code: 'Alder',        selection: { filter: 'item', values: ageValues } },
+      { code: 'Kon',          selection: { filter: 'item', values: ['1','2'] } },
+      { code: 'ContentsCode', selection: { filter: 'item', values: ['BE0101N1'] } },
+      { code: 'Tid',          selection: { filter: 'item', values: years.map(String) } }
+    ],
+    response: { format: 'json' }
+  };
+}
+
+// Sum pxParse rows into { Region: total } map
+function sumByRegion(rows) {
+  var m = {};
+  rows.forEach(function(r) { m[r.Region] = (m[r.Region] || 0) + (r.BE0101N1 || 0); });
+  return m;
+}
+
+// Sum pxParse rows into { Tid: { Region: total } } map
+function sumByYearRegion(rows) {
+  var m = {};
+  rows.forEach(function(r) {
+    if (!m[r.Tid]) m[r.Tid] = {};
+    m[r.Tid][r.Region] = (m[r.Tid][r.Region] || 0) + (r.BE0101N1 || 0);
+  });
+  return m;
+}
+
 const INDIKATORER = {
   befolkning: {
     label: 'Folkmängd (total)',
     unit: 'personer',
     fetch: async function(koder, year) {
-      const res = await scbPost('BE/BE0101/BE0101A/BefolkningNy', {
-        query: [
-          { code: 'Region',       selection: { filter: 'vs:RegionKommun07', values: koder } },
-          { code: 'Alder',        selection: { filter: 'item', values: ['tot'] } },
-          { code: 'Kon',          selection: { filter: 'item', values: ['1','2'] } },
-          { code: 'ContentsCode', selection: { filter: 'item', values: ['BE0101N1'] } },
-          { code: 'Tid',          selection: { filter: 'item', values: [String(year)] } }
-        ],
-        response: { format: 'json' }
-      });
-      const result = {};
-      res.data.data.forEach(function(row) {
-        const kod = row.key[0];
-        const val = parseFloat(row.values[0]);
-        result[kod] = (result[kod] || 0) + val;
-      });
-      return { result: result, cached: res.cached };
+      var res = await scbPost(POP_TABLE, popQuery(koder, ['tot'], [year]));
+      return { result: sumByRegion(pxParse(res.data)), cached: res.cached };
     }
   },
 
@@ -1383,30 +1440,15 @@ const INDIKATORER = {
     label: 'Befolkningsförändring (%)',
     unit: '%',
     fetch: async function(koder, year) {
-      const prevYear = String(+year - 1);
-      const res = await scbPost('BE/BE0101/BE0101A/BefolkningNy', {
-        query: [
-          { code: 'Region',       selection: { filter: 'vs:RegionKommun07', values: koder } },
-          { code: 'Alder',        selection: { filter: 'item', values: ['tot'] } },
-          { code: 'Kon',          selection: { filter: 'item', values: ['1','2'] } },
-          { code: 'ContentsCode', selection: { filter: 'item', values: ['BE0101N1'] } },
-          { code: 'Tid',          selection: { filter: 'item', values: [String(year), prevYear] } }
-        ],
-        response: { format: 'json' }
-      });
-      const byYear = {};
-      res.data.data.forEach(function(row) {
-        const kod = row.key[0]; const yr = row.key[4];
-        if (!byYear[yr]) byYear[yr] = {};
-        byYear[yr][kod] = (byYear[yr][kod] || 0) + parseFloat(row.values[0]);
-      });
-      const result = {};
-      koder.forEach(function(kod) {
-        const curr = (byYear[String(year)] || {})[kod];
-        const prev = (byYear[prevYear] || {})[kod];
-        if (curr != null && prev != null && prev !== 0) {
-          result[kod] = +((curr - prev) / prev * 100).toFixed(2);
-        }
+      var prev = year - 1;
+      var res  = await scbPost(POP_TABLE, popQuery(koder, ['tot'], [year, prev]));
+      var byYr = sumByYearRegion(pxParse(res.data));
+      var result = {};
+      koder.forEach(function(k) {
+        var curr = (byYr[String(year)]  || {})[k];
+        var prv  = (byYr[String(prev)]  || {})[k];
+        if (curr != null && prv && prv !== 0)
+          result[k] = +((curr - prv) / prv * 100).toFixed(2);
       });
       return { result: result, cached: res.cached };
     }
@@ -1415,104 +1457,80 @@ const INDIKATORER = {
   alder65: {
     label: 'Andel 65+ år (%)',
     unit: '%',
-    fallback: true,
     fetch: async function(koder, year) {
-      const res = await scbPost('BE/BE0101/BE0101A/BefolkningNy', {
-        query: [
-          { code: 'Region',       selection: { filter: 'vs:RegionKommun07', values: koder } },
-          { code: 'Alder',        selection: { filter: 'agg:Ålder10år', values: ['65-69','70-74','75-79','80-84','85-89','90+','tot'] } },
-          { code: 'Kon',          selection: { filter: 'item', values: ['1','2'] } },
-          { code: 'ContentsCode', selection: { filter: 'item', values: ['BE0101N1'] } },
-          { code: 'Tid',          selection: { filter: 'item', values: [String(year)] } }
-        ],
-        response: { format: 'json' }
+      // Discover age codes from metadata, then filter ≥65 in JS
+      var meta    = await scbMeta(POP_TABLE);
+      var allAges = metaValues(meta, 'Alder').filter(function(a) { return a !== 'tot'; });
+      var ages65  = allAges.filter(function(a) {
+        var n = parseInt(a, 10); return (!isNaN(n) && n >= 65) || a === '100+';
       });
-      const totals = {}, over65 = {};
-      res.data.data.forEach(function(row) {
-        const kod = row.key[0]; const age = row.key[1];
-        const val = parseFloat(row.values[0]);
-        if (age === 'tot') totals[kod] = (totals[kod] || 0) + val;
-        else over65[kod] = (over65[kod] || 0) + val;
+      if (ages65.length === 0) throw new Error('Inga ålderskoder ≥65 hittades i metadata');
+
+      var [totRes, oldRes] = await Promise.all([
+        scbPost(POP_TABLE, popQuery(koder, ['tot'],  [year])),
+        scbPost(POP_TABLE, popQuery(koder, ages65,   [year]))
+      ]);
+      var totals = sumByRegion(pxParse(totRes.data));
+      var old65  = sumByRegion(pxParse(oldRes.data));
+      var result = {};
+      koder.forEach(function(k) {
+        if (totals[k] > 0) result[k] = +((old65[k] || 0) / totals[k] * 100).toFixed(1);
       });
-      const result = {};
-      koder.forEach(function(kod) {
-        if (totals[kod] && totals[kod] > 0) result[kod] = +((over65[kod] || 0) / totals[kod] * 100).toFixed(1);
-      });
-      return { result: result, cached: res.cached };
+      return { result: result, cached: totRes.cached && oldRes.cached };
     }
   },
 
   alder017: {
     label: 'Andel 0–17 år (%)',
     unit: '%',
-    fallback: true,
     fetch: async function(koder, year) {
-      const res = await scbPost('BE/BE0101/BE0101A/BefolkningNy', {
-        query: [
-          { code: 'Region',       selection: { filter: 'vs:RegionKommun07', values: koder } },
-          { code: 'Alder',        selection: { filter: 'agg:Ålder10år', values: ['0-9','10-19','tot'] } },
-          { code: 'Kon',          selection: { filter: 'item', values: ['1','2'] } },
-          { code: 'ContentsCode', selection: { filter: 'item', values: ['BE0101N1'] } },
-          { code: 'Tid',          selection: { filter: 'item', values: [String(year)] } }
-        ],
-        response: { format: 'json' }
+      var meta     = await scbMeta(POP_TABLE);
+      var allAges  = metaValues(meta, 'Alder').filter(function(a) { return a !== 'tot'; });
+      var ages017  = allAges.filter(function(a) {
+        var n = parseInt(a, 10); return !isNaN(n) && n >= 0 && n <= 17;
       });
-      const totals = {}, g09 = {}, g1019 = {};
-      res.data.data.forEach(function(row) {
-        const kod = row.key[0]; const age = row.key[1];
-        const val = parseFloat(row.values[0]);
-        if (age === 'tot') totals[kod] = (totals[kod] || 0) + val;
-        else if (age === '0-9') g09[kod] = (g09[kod] || 0) + val;
-        else if (age === '10-19') g1019[kod] = (g1019[kod] || 0) + val;
+      if (ages017.length === 0) throw new Error('Inga ålderskoder 0–17 hittades');
+
+      var [totRes, youngRes] = await Promise.all([
+        scbPost(POP_TABLE, popQuery(koder, ['tot'],   [year])),
+        scbPost(POP_TABLE, popQuery(koder, ages017,   [year]))
+      ]);
+      var totals = sumByRegion(pxParse(totRes.data));
+      var young  = sumByRegion(pxParse(youngRes.data));
+      var result = {};
+      koder.forEach(function(k) {
+        if (totals[k] > 0) result[k] = +((young[k] || 0) / totals[k] * 100).toFixed(1);
       });
-      const result = {};
-      koder.forEach(function(kod) {
-        if (totals[kod] && totals[kod] > 0) {
-          const approx = (g09[kod] || 0) + (g1019[kod] || 0) * 0.8;
-          result[kod] = +(approx / totals[kod] * 100).toFixed(1);
-        }
-      });
-      return { result: result, cached: res.cached };
+      return { result: result, cached: totRes.cached && youngRes.cached };
     }
   },
 
   utrikesfodda: {
     label: 'Andel utrikes födda (%)',
     unit: '%',
-    fallback: true,
     fetch: async function(koder, year) {
-      const [utRes, totRes] = await Promise.all([
-        scbPost('BE/BE0101/BE0101E/FoddaIEller', {
+      // BE0101E: InUtrFoddaRegAlKon – utrikes- och inrikesfödda per region, ålder, kön
+      // ContentsCode BE0101E2 = Utrikes födda
+      var [utRes, totRes] = await Promise.all([
+        scbPost('BE/BE0101/BE0101E/InUtrFoddaRegAlKon', {
           query: [
             { code: 'Region',       selection: { filter: 'vs:RegionKommun07', values: koder } },
-            { code: 'ContentsCode', selection: { filter: 'item', values: ['BE0101E4'] } },
+            { code: 'Alder',        selection: { filter: 'item', values: ['tot'] } },
+            { code: 'Kon',          selection: { filter: 'item', values: ['1+2'] } },
+            { code: 'ContentsCode', selection: { filter: 'item', values: ['BE0101E2'] } },
             { code: 'Tid',          selection: { filter: 'item', values: [String(year)] } }
           ],
           response: { format: 'json' }
         }),
-        scbPost('BE/BE0101/BE0101A/BefolkningNy', {
-          query: [
-            { code: 'Region',       selection: { filter: 'vs:RegionKommun07', values: koder } },
-            { code: 'Alder',        selection: { filter: 'item', values: ['tot'] } },
-            { code: 'Kon',          selection: { filter: 'item', values: ['1','2'] } },
-            { code: 'ContentsCode', selection: { filter: 'item', values: ['BE0101N1'] } },
-            { code: 'Tid',          selection: { filter: 'item', values: [String(year)] } }
-          ],
-          response: { format: 'json' }
-        })
+        scbPost(POP_TABLE, popQuery(koder, ['tot'], [year]))
       ]);
-      const utCounts = {};
-      utRes.data.data.forEach(function(row) { utCounts[row.key[0]] = parseFloat(row.values[0]); });
-      const totCounts = {};
-      totRes.data.data.forEach(function(row) {
-        const kod = row.key[0];
-        totCounts[kod] = (totCounts[kod] || 0) + parseFloat(row.values[0]);
-      });
-      const result = {};
-      koder.forEach(function(kod) {
-        if (totCounts[kod] && totCounts[kod] > 0 && utCounts[kod] != null) {
-          result[kod] = +(utCounts[kod] / totCounts[kod] * 100).toFixed(1);
-        }
+      var utCounts  = {};
+      pxParse(utRes.data).forEach(function(r) { utCounts[r.Region] = r.BE0101E2 || 0; });
+      var totCounts = sumByRegion(pxParse(totRes.data));
+      var result = {};
+      koder.forEach(function(k) {
+        if (totCounts[k] > 0 && utCounts[k] != null)
+          result[k] = +(utCounts[k] / totCounts[k] * 100).toFixed(1);
       });
       return { result: result, cached: utRes.cached && totRes.cached };
     }
