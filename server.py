@@ -16,7 +16,6 @@ from typing import Optional
 import httpx
 from mcp.server.fastmcp import FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
-from pydantic import BaseModel, ConfigDict, Field
 
 # ---------------------------------------------------------------------------
 # Konstanter
@@ -122,7 +121,6 @@ async def scb_get(path: str, params: dict | None = None) -> dict:
 
 
 def _format_table_list(tables: list, total: int, page: int, page_size: int) -> str:
-    """Formaterar en lista med SCB-tabeller till markdown."""
     lines = [f"**SCB Tabeller** — {len(tables)} av {total} träffar (sida {page})\n"]
     for t in tables:
         lines.append(f"### {t.get('id', '?')} — {t.get('label', 'Okänd')}")
@@ -137,7 +135,6 @@ def _format_table_list(tables: list, total: int, page: int, page_size: int) -> s
 
 
 def _format_jsonstat2(data: dict, table_id: str) -> str:
-    """Konverterar JSON-stat2-svar till läsbart markdown."""
     try:
         label = data.get("label", table_id)
         updated = (data.get("updated") or "?")[:10]
@@ -150,7 +147,6 @@ def _format_jsonstat2(data: dict, table_id: str) -> str:
         if not values:
             return "\n".join(lines) + "\nInga datavärden returnerades för valda filter."
 
-        # Bygg dimensionsmappningar
         dim_codes: dict[str, list[str]] = {}
         dim_labels: dict[str, dict[str, str]] = {}
 
@@ -168,7 +164,6 @@ def _format_jsonstat2(data: dict, table_id: str) -> str:
 
         lines.append(f"\n**Antal datavärden:** {len(values)}\n")
 
-        # Visa data om det är få nog
         if len(values) <= 200:
             lines.append("### Data\n")
             combos = list(itertools.product(*[dim_codes[d] for d in dim_ids]))
@@ -197,22 +192,6 @@ def _format_jsonstat2(data: dict, table_id: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-class SearchTablesInput(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
-
-    query: str = Field(
-        ...,
-        description="Sökterm på svenska, t.ex. 'befolkning', 'sysselsättning', 'BRP', 'bostäder'",
-        min_length=1,
-        max_length=200,
-    )
-    page: Optional[int] = Field(default=1, description="Sidnummer (börjar på 1)", ge=1)
-    page_size: Optional[int] = Field(default=10, description="Antal resultat per sida (1–50)", ge=1, le=50)
-    only_recent: Optional[bool] = Field(
-        default=False, description="True = visa bara tabeller uppdaterade de senaste 30 dagarna"
-    )
-
-
 @mcp.tool(
     name="scb_search_tables",
     annotations={
@@ -222,28 +201,29 @@ class SearchTablesInput(BaseModel):
         "openWorldHint": True,
     },
 )
-async def scb_search_tables(params: SearchTablesInput) -> str:
+async def scb_search_tables(
+    query: str,
+    page: int = 1,
+    page_size: int = 10,
+    only_recent: bool = False,
+) -> str:
     """Sök bland alla tabeller i SCB:s Statistikdatabas.
 
     Returnerar matchande tabeller med ID, titel, uppdateringsdatum, tidsperiod och variabelnamn.
-    Nästa steg: anropa scb_get_metadata(table_id) för att se variabelkoder.
+    Nästa steg: anropa scb_get_metadata med table_id för att se variabelkoder.
 
     Args:
-        params (SearchTablesInput):
-            - query (str): Sökterm, t.ex. 'befolkning', 'sysselsättning'
-            - page (int): Sidnummer, default 1
-            - page_size (int): Resultat per sida, default 10 (max 50)
-            - only_recent (bool): Filtrera på senaste 30 dagars uppdateringar
-
-    Returns:
-        str: Markdown-lista med matchande tabeller och metadata
+        query: Sökterm på svenska, t.ex. 'befolkning', 'sysselsättning', 'BRP', 'bostäder'
+        page: Sidnummer (börjar på 1), default 1
+        page_size: Antal resultat per sida (1–50), default 10
+        only_recent: True = visa bara tabeller uppdaterade de senaste 30 dagarna
     """
     api_params: dict = {
-        "query": params.query,
-        "pageNumber": params.page,
-        "pageSize": params.page_size,
+        "query": query,
+        "pageNumber": page,
+        "pageSize": max(1, min(50, page_size)),
     }
-    if params.only_recent:
+    if only_recent:
         api_params["pastDays"] = 30
 
     try:
@@ -251,7 +231,7 @@ async def scb_search_tables(params: SearchTablesInput) -> str:
         tables = data.get("tables", [])
         page_info = data.get("page", {})
         total = page_info.get("totalElements", len(tables))
-        return _format_table_list(tables, total, params.page, params.page_size)
+        return _format_table_list(tables, total, page, page_size)
     except ValueError as exc:
         return f"Fel vid sökning: {exc}"
 
@@ -259,17 +239,6 @@ async def scb_search_tables(params: SearchTablesInput) -> str:
 # ---------------------------------------------------------------------------
 # Verktyg 2 — Grundinfo om tabell
 # ---------------------------------------------------------------------------
-
-
-class GetTableInfoInput(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
-
-    table_id: str = Field(
-        ...,
-        description="SCB tabell-ID, t.ex. 'TAB5974' eller 'BE0101A1'",
-        min_length=1,
-        max_length=50,
-    )
 
 
 @mcp.tool(
@@ -281,20 +250,16 @@ class GetTableInfoInput(BaseModel):
         "openWorldHint": True,
     },
 )
-async def scb_get_table_info(params: GetTableInfoInput) -> str:
+async def scb_get_table_info(table_id: str) -> str:
     """Hämta grundläggande information om en specifik SCB-tabell.
 
     Returnerar titel, uppdateringsdatum, tidsperiod, variabelnamn och ämnesväg.
 
     Args:
-        params (GetTableInfoInput):
-            - table_id (str): SCB tabell-ID, t.ex. 'TAB5974'
-
-    Returns:
-        str: Markdown med tabellens grundläggande information
+        table_id: SCB tabell-ID, t.ex. 'TAB5974' eller 'BE0101A1'
     """
     try:
-        data = await scb_get(f"tables/{params.table_id}")
+        data = await scb_get(f"tables/{table_id}")
         lines = [
             f"## Tabell: {data.get('id')} — {data.get('label', '?')}",
             f"- **Uppdaterad:** {(data.get('updated') or '?')[:10]}",
@@ -319,17 +284,6 @@ async def scb_get_table_info(params: GetTableInfoInput) -> str:
 # ---------------------------------------------------------------------------
 
 
-class GetMetadataInput(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
-
-    table_id: str = Field(
-        ...,
-        description="SCB tabell-ID, t.ex. 'TAB5974'",
-        min_length=1,
-        max_length=50,
-    )
-
-
 @mcp.tool(
     name="scb_get_metadata",
     annotations={
@@ -339,22 +293,18 @@ class GetMetadataInput(BaseModel):
         "openWorldHint": True,
     },
 )
-async def scb_get_metadata(params: GetMetadataInput) -> str:
+async def scb_get_metadata(table_id: str) -> str:
     """Hämta detaljerad metadata för en SCB-tabell: variabler, dimensioner och värdekoder.
 
     Obligatoriskt steg innan datahämtning — du behöver variabelkoderna för filter.
     Visar vilka variabler som är obligatoriska respektive valfria (eliminerbara).
 
     Args:
-        params (GetMetadataInput):
-            - table_id (str): SCB tabell-ID
-
-    Returns:
-        str: Markdown med alla variabler, deras koder och möjliga värden
+        table_id: SCB tabell-ID, t.ex. 'TAB5974'
     """
     try:
-        data = await scb_get(f"tables/{params.table_id}/metadata")
-        lines = [f"## Metadata: {data.get('label', params.table_id)}\n"]
+        data = await scb_get(f"tables/{table_id}/metadata")
+        lines = [f"## Metadata: {data.get('label', table_id)}\n"]
         dimensions: dict = data.get("dimension", {})
         dim_ids: list[str] = data.get("id", [])
 
@@ -396,30 +346,6 @@ async def scb_get_metadata(params: GetMetadataInput) -> str:
 # ---------------------------------------------------------------------------
 
 
-class GetDataInput(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
-
-    table_id: str = Field(
-        ...,
-        description="SCB tabell-ID, t.ex. 'TAB5974'",
-        min_length=1,
-        max_length=50,
-    )
-    variable_filters: Optional[str] = Field(
-        default=None,
-        description=(
-            "Variabelfilter: 'VarID1=kod1,kod2;VarID2=top(5)'. "
-            "Separera variabler med semikolon (;) och koder med komma (,). "
-            "Specialuttryck: * (alla), top(N), from(kod), to(kod), range(kod1,kod2). "
-            "Exempel: 'Region=1480,1490;Tid=top(5)' eller 'Region=*;ContentsCode=Folkmängd;Tid=from(2020)'"
-        ),
-    )
-    output_format: Optional[str] = Field(
-        default="readable",
-        description="'readable' (markdown, default), 'json' (JSON-stat2 rådata), 'csv' (semikolon-separerad)",
-    )
-
-
 @mcp.tool(
     name="scb_get_data",
     annotations={
@@ -429,7 +355,11 @@ class GetDataInput(BaseModel):
         "openWorldHint": True,
     },
 )
-async def scb_get_data(params: GetDataInput) -> str:
+async def scb_get_data(
+    table_id: str,
+    variable_filters: Optional[str] = None,
+    output_format: str = "readable",
+) -> str:
     """Hämta statistikdata från en SCB-tabell med valfria filter.
 
     Kräver att variabelkoder är kända (kör scb_get_metadata först).
@@ -437,34 +367,30 @@ async def scb_get_data(params: GetDataInput) -> str:
     Max 150 000 dataceller per anrop — lägg till filter om du får fel 403.
 
     Args:
-        params (GetDataInput):
-            - table_id (str): SCB tabell-ID
-            - variable_filters (str): Filter, t.ex. 'Region=1480;Tid=top(5)'
-            - output_format (str): 'readable' | 'json' | 'csv'
-
-    Returns:
-        str: Statistikdata i valt format
+        table_id: SCB tabell-ID, t.ex. 'TAB5974'
+        variable_filters: Filter på formen 'VarID1=kod1,kod2;VarID2=top(5)'.
+            Separera variabler med semikolon och koder med komma.
+            Specialuttryck: * (alla), top(N), from(kod), to(kod), range(kod1,kod2).
+            Exempel: 'Region=1480,1490;Tid=top(5)' eller 'Region=*;ContentsCode=Folkmängd;Tid=from(2020)'
+        output_format: 'readable' (markdown, default), 'json' (JSON-stat2 rådata), 'csv' (semikolon-separerad)
     """
     api_params: dict = {}
 
-    # Parsa variable_filters: "Region=1480,1490;Tid=top(5)" → valueCodes[Region]=1480,1490 osv.
-    if params.variable_filters:
-        for part in params.variable_filters.split(";"):
+    if variable_filters:
+        for part in variable_filters.split(";"):
             part = part.strip()
             if "=" in part:
                 var_id, codes = part.split("=", 1)
                 api_params[f"valueCodes[{var_id.strip()}]"] = codes.strip()
 
-    # Alltid JSON-stat2 från API:et — konvertera sedan
     api_params["outputFormat"] = "json-stat2"
 
     try:
-        data = await scb_get(f"tables/{params.table_id}/data", api_params)
+        data = await scb_get(f"tables/{table_id}/data", api_params)
 
-        if params.output_format == "json":
+        if output_format == "json":
             return json.dumps(data, ensure_ascii=False, indent=2)
-        elif params.output_format == "csv":
-            # Bygg enkel CSV från JSON-stat2
+        elif output_format == "csv":
             dim_ids: list[str] = data.get("id", [])
             dimensions: dict = data.get("dimension", {})
             values: list = data.get("value", [])
@@ -488,7 +414,7 @@ async def scb_get_data(params: GetDataInput) -> str:
                 rows.append(";".join(parts) + f";{val_str}")
             return "\n".join(rows)
         else:
-            return _format_jsonstat2(data, params.table_id)
+            return _format_jsonstat2(data, table_id)
 
     except ValueError as exc:
         return f"Fel vid datahämtning: {exc}"
@@ -497,15 +423,6 @@ async def scb_get_data(params: GetDataInput) -> str:
 # ---------------------------------------------------------------------------
 # Verktyg 5 — Lista VG-regioner
 # ---------------------------------------------------------------------------
-
-
-class ListVGRegionsInput(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    filter: Optional[str] = Field(
-        default=None,
-        description="Fritext-filter på kommunnamn, t.ex. 'göteborg', 'borås' (skiftlägesokänsligt)",
-    )
 
 
 @mcp.tool(
@@ -517,22 +434,18 @@ class ListVGRegionsInput(BaseModel):
         "openWorldHint": False,
     },
 )
-async def scb_list_vg_regions(params: ListVGRegionsInput) -> str:
+async def scb_list_vg_regions(filter: Optional[str] = None) -> str:
     """Lista alla 49 kommuner i Västra Götalands län med SCB-regionkoder.
 
-    Dessa koder används som filter i scb_get_data, t.ex. valueCodes[Region]=1480,1490.
+    Dessa koder används som filter i scb_get_data, t.ex. Region=1480,1490.
     Länskoden för hela Västra Götaland är '14'.
 
     Args:
-        params (ListVGRegionsInput):
-            - filter (str, valfri): Filtrera kommunnamn, t.ex. 'göteborg'
-
-    Returns:
-        str: Markdown-tabell med kod och kommunnamn
+        filter: Fritext-filter på kommunnamn, t.ex. 'göteborg' eller 'borås' (skiftlägesokänsligt)
     """
     municipalities = dict(VG_MUNICIPALITIES)
-    if params.filter:
-        f = params.filter.lower()
+    if filter:
+        f = filter.lower()
         municipalities = {k: v for k, v in municipalities.items() if f in v.lower()}
 
     lines = [
@@ -561,4 +474,3 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
-
