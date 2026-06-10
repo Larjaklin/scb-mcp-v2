@@ -11,7 +11,6 @@ Ger AI-agenter tillgång till SCB:s Statistikdatabas via fem verktyg:
 import itertools
 import json
 import os
-from typing import Optional
 
 import httpx
 from mcp.server.fastmcp import FastMCP
@@ -357,7 +356,7 @@ async def scb_get_metadata(table_id: str) -> str:
 )
 async def scb_get_data(
     table_id: str,
-    variable_filters: Optional[str] = None,
+    variable_filters: str = "",
     output_format: str = "readable",
 ) -> str:
     """Hämta statistikdata från en SCB-tabell med valfria filter.
@@ -376,7 +375,7 @@ async def scb_get_data(
     """
     api_params: dict = {}
 
-    if variable_filters:
+    if variable_filters.strip():
         for part in variable_filters.split(";"):
             part = part.strip()
             if "=" in part:
@@ -434,7 +433,7 @@ async def scb_get_data(
         "openWorldHint": False,
     },
 )
-async def scb_list_vg_regions(filter: Optional[str] = None) -> str:
+async def scb_list_vg_regions(filter: str = "") -> str:
     """Lista alla 49 kommuner i Västra Götalands län med SCB-regionkoder.
 
     Dessa koder används som filter i scb_get_data, t.ex. Region=1480,1490.
@@ -444,7 +443,7 @@ async def scb_list_vg_regions(filter: Optional[str] = None) -> str:
         filter: Fritext-filter på kommunnamn, t.ex. 'göteborg' eller 'borås' (skiftlägesokänsligt)
     """
     municipalities = dict(VG_MUNICIPALITIES)
-    if filter:
+    if filter.strip():
         f = filter.lower()
         municipalities = {k: v for k, v in municipalities.items() if f in v.lower()}
 
