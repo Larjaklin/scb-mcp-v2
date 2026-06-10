@@ -554,7 +554,8 @@ async def scb_list_vg_regions(params: ListVGRegionsInput) -> str:
 # ---------------------------------------------------------------------------
 
 # ASGI-app exponeras på modulnivå för Render/uvicorn
-app = mcp.streamable_http_app()
+# Använder SSE-transport → exponerar /sse (kompatibelt med n8n MCP Client)
+app = mcp.sse_app()
 
 if __name__ == "__main__":
     import uvicorn
