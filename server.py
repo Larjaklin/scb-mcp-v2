@@ -462,12 +462,59 @@ async def scb_list_vg_regions(filter: str = "") -> str:
 
 
 # ---------------------------------------------------------------------------
+# REST-endpoint för n8n (ingen MCP-sessions-hantering krävs)
+# ---------------------------------------------------------------------------
+
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from starlette.applications import Starlette
+from starlette.routing import Mount
+
+rest_app = FastAPI()
+
+@rest_app.post("/")
+async def query_scb(request: Request):
+    """Enkel REST-endpoint för n8n.
+    Body: { "table_id": "TAB3143", "variable_filters": "ContentsCode=NR0105AY;Tid=top(1)", "output_format": "json" }
+    """
+    try:
+        body = await request.json()
+        table_id = body.get("table_id", "")
+        variable_filters = body.get("variable_filters", "")
+
+        if not table_id:
+            return JSONResponse({"error": "table_id krävs"}, status_code=400)
+
+        api_params: dict = {}
+        if variable_filters.strip():
+            for part in variable_filters.split(";"):
+                part = part.strip()
+                if "=" in part:
+                    var_id, codes = part.split("=", 1)
+                    api_params[f"valueCodes[{var_id.strip()}]"] = codes.strip()
+
+        api_params["outputFormat"] = "json-stat2"
+        data = await scb_get(f"tables/{table_id}/data", api_params)
+        return JSONResponse(data)
+
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=500)
+    except Exception as exc:
+        return JSONResponse({"error": f"Oväntat fel: {exc}"}, status_code=500)
+
+
+# ---------------------------------------------------------------------------
 # Start
 # ---------------------------------------------------------------------------
 
 # ASGI-app exponeras på modulnivå för Render/uvicorn
-# Streamable HTTP-transport → exponerar /mcp (nytt protokoll, rekommenderas i n8n)
-app = mcp.streamable_http_app()
+# MCP-appen på /mcp, REST-endpointen för n8n på /query
+mcp_app = mcp.streamable_http_app()
+
+app = Starlette(routes=[
+    Mount("/query", app=rest_app),
+    Mount("/", app=mcp_app),
+])
 
 if __name__ == "__main__":
     import uvicorn
