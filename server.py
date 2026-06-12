@@ -461,29 +461,26 @@ async def scb_list_vg_regions(filter: str = "") -> str:
     return "\n".join(lines)
 
 
+
 # ---------------------------------------------------------------------------
 # REST-endpoint för n8n (ingen MCP-sessions-hantering krävs)
 # ---------------------------------------------------------------------------
 
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from starlette.requests import Request as StarletteRequest
+from starlette.responses import JSONResponse as StarletteJSONResponse
+from starlette.routing import Route, Mount
 from starlette.applications import Starlette
-from starlette.routing import Mount
 
-rest_app = FastAPI()
 
-@rest_app.post("/")
-async def query_scb(request: Request):
-    """Enkel REST-endpoint för n8n.
-    Body: { "table_id": "TAB3143", "variable_filters": "ContentsCode=NR0105AY;Tid=top(1)", "output_format": "json" }
-    """
+async def query_scb(request: StarletteRequest):
+    """POST /query — Enkel REST-endpoint för n8n."""
     try:
         body = await request.json()
         table_id = body.get("table_id", "")
         variable_filters = body.get("variable_filters", "")
 
         if not table_id:
-            return JSONResponse({"error": "table_id krävs"}, status_code=400)
+            return StarletteJSONResponse({"error": "table_id krävs"}, status_code=400)
 
         api_params: dict = {}
         if variable_filters.strip():
@@ -495,24 +492,22 @@ async def query_scb(request: Request):
 
         api_params["outputFormat"] = "json-stat2"
         data = await scb_get(f"tables/{table_id}/data", api_params)
-        return JSONResponse(data)
+        return StarletteJSONResponse(data)
 
     except ValueError as exc:
-        return JSONResponse({"error": str(exc)}, status_code=500)
+        return StarletteJSONResponse({"error": str(exc)}, status_code=500)
     except Exception as exc:
-        return JSONResponse({"error": f"Oväntat fel: {exc}"}, status_code=500)
+        return StarletteJSONResponse({"error": f"Oväntat fel: {exc}"}, status_code=500)
 
 
 # ---------------------------------------------------------------------------
 # Start
 # ---------------------------------------------------------------------------
 
-# ASGI-app exponeras på modulnivå för Render/uvicorn
-# MCP-appen på /mcp, REST-endpointen för n8n på /query
 mcp_app = mcp.streamable_http_app()
 
 app = Starlette(routes=[
-    Mount("/query", app=rest_app),
+    Route("/query", endpoint=query_scb, methods=["POST"]),
     Mount("/", app=mcp_app),
 ])
 
