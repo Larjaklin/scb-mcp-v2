@@ -516,7 +516,7 @@ VG_MUNICIPALITY_IDS = [
 
 async def kolada_get(path: str, params: dict) -> dict:
     url = f"{KOLADA_BASE_URL}/{path}"
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
         response = await client.get(url, params=params)
         response.raise_for_status()
         return response.json()
