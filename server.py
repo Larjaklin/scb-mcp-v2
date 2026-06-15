@@ -533,39 +533,24 @@ async def query_kolada(request: StarletteRequest):
         if not kpi_id:
             return StarletteJSONResponse({"error": "kpi_id krävs"}, status_code=400)
 
-        # Testa med bara en kommun for debug
+        # Anropa en kommun i taget for robusthet
         all_values = []
-        batch_size = 5
-        debug_info = []
-        
-        # Testa forst med Goteborg (1480) separat
-        test_params = {"kpi_id": kpi_id, "municipality_id": "1480", "page_size": 10}
-        if year:
-            test_params["year"] = str(year)
-        test_data = await kolada_get("data", test_params)
-        
-        for i in range(0, len(VG_MUNICIPALITY_IDS), batch_size):
-            batch = VG_MUNICIPALITY_IDS[i:i + batch_size]
+        for mun_id in VG_MUNICIPALITY_IDS:
             params = {
                 "kpi_id": kpi_id,
-                "municipality_id": ",".join(batch),
+                "municipality_id": mun_id,
                 "page_size": 100,
             }
             if year:
                 params["year"] = str(year)
 
-            data = await kolada_get("data", params)
-            batch_values = data.get("values", [])
-            all_values.extend(batch_values)
-            if i == 0:
-                debug_info = {
-                    "first_batch_params": params,
-                    "first_batch_count": len(batch_values),
-                    "goteborg_test_count": test_data.get("count", 0),
-                    "goteborg_sample": test_data.get("values", [])[:2]
-                }
+            try:
+                data = await kolada_get("data", params)
+                all_values.extend(data.get("values", []))
+            except Exception:
+                pass  # hoppa over kommuner utan data
 
-        return StarletteJSONResponse({"values": all_values, "count": len(all_values), "debug": debug_info})
+        return StarletteJSONResponse({"values": all_values, "count": len(all_values)})
 
     except Exception as exc:
         return StarletteJSONResponse({"error": f"Fel: {exc}"}, status_code=500)
