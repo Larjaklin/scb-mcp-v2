@@ -501,6 +501,61 @@ async def query_scb(request: StarletteRequest):
 
 
 # ---------------------------------------------------------------------------
+# Kolada-endpoint för n8n
+# ---------------------------------------------------------------------------
+
+KOLADA_BASE_URL = "https://api.kolada.se/v3"
+
+VG_MUNICIPALITY_IDS = [
+    "1401","1402","1407","1415","1419","1421","1427","1430","1435","1438",
+    "1439","1440","1441","1442","1443","1444","1445","1446","1447","1452",
+    "1460","1461","1462","1463","1465","1466","1470","1471","1472","1473",
+    "1480","1481","1482","1484","1485","1486","1487","1488","1489","1490",
+    "1491","1492","1493","1494","1495","1496","1497","1498","1499"
+]
+
+async def kolada_get(path: str, params: dict) -> dict:
+    url = f"{KOLADA_BASE_URL}/{path}"
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.get(url, params=params)
+        response.raise_for_status()
+        return response.json()
+
+async def query_kolada(request: StarletteRequest):
+    """POST /kolada — Hämtar Kolada-data för alla VG-kommuner.
+    Body: { "kpi_id": "N00708", "year": 2023 (valfritt) }
+    """
+    try:
+        body = await request.json()
+        kpi_id = body.get("kpi_id", "")
+        year = body.get("year")
+
+        if not kpi_id:
+            return StarletteJSONResponse({"error": "kpi_id krävs"}, status_code=400)
+
+        # Anropa 5 kommuner i taget för att undvika URL-längdsbegränsningar
+        all_values = []
+        batch_size = 5
+        for i in range(0, len(VG_MUNICIPALITY_IDS), batch_size):
+            batch = VG_MUNICIPALITY_IDS[i:i + batch_size]
+            params = {
+                "kpi_id": kpi_id,
+                "municipality_id": ",".join(batch),
+                "page_size": 100,
+            }
+            if year:
+                params["year"] = str(year)
+
+            data = await kolada_get("data", params)
+            all_values.extend(data.get("values", []))
+
+        return StarletteJSONResponse({"values": all_values, "count": len(all_values)})
+
+    except Exception as exc:
+        return StarletteJSONResponse({"error": f"Fel: {exc}"}, status_code=500)
+
+
+# ---------------------------------------------------------------------------
 # Start
 # ---------------------------------------------------------------------------
 
@@ -508,6 +563,7 @@ mcp_app = mcp.streamable_http_app()
 
 app = Starlette(routes=[
     Route("/query", endpoint=query_scb, methods=["POST"]),
+    Route("/kolada", endpoint=query_kolada, methods=["POST"]),
     Mount("/", app=mcp_app),
 ])
 
