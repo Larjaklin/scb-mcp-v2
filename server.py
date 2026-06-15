@@ -536,6 +536,7 @@ async def query_kolada(request: StarletteRequest):
         # Anropa 5 kommuner i taget för att undvika URL-längdsbegränsningar
         all_values = []
         batch_size = 5
+        debug_info = []
         for i in range(0, len(VG_MUNICIPALITY_IDS), batch_size):
             batch = VG_MUNICIPALITY_IDS[i:i + batch_size]
             params = {
@@ -547,9 +548,12 @@ async def query_kolada(request: StarletteRequest):
                 params["year"] = str(year)
 
             data = await kolada_get("data", params)
-            all_values.extend(data.get("values", []))
+            batch_values = data.get("values", [])
+            all_values.extend(batch_values)
+            if i == 0:
+                debug_info = {"first_batch_params": params, "first_batch_count": len(batch_values), "first_batch_sample": batch_values[:2]}
 
-        return StarletteJSONResponse({"values": all_values, "count": len(all_values)})
+        return StarletteJSONResponse({"values": all_values, "count": len(all_values), "debug": debug_info})
 
     except Exception as exc:
         return StarletteJSONResponse({"error": f"Fel: {exc}"}, status_code=500)
