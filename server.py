@@ -700,22 +700,22 @@ async def query_af(request: StarletteRequest):
             if kommun_namn in seen:
                 continue
             seen.add(kommun_namn)
-                value = row[period_col_idx]
-                if value is not None:
-                    try:
-                        value = float(value)
-                    except (TypeError, ValueError):
-                        value = None
-                kod = next((k for k, v in VG_MUNICIPALITIES.items() if v == kommun_namn), None)
-                results.append({
-                    "kommun_namn": kommun_namn,
-                    "kommun_kod": kod,
-                    "period": period_filter,
-                    "value": value,
-                    "kpi": kpi,
-                    "kalla": "AF",
-                    "enhet": "procent"
-                })
+            value = row[value_col_idx]
+            if value is not None:
+                try:
+                    value = float(value)
+                except (TypeError, ValueError):
+                    value = None
+            kod = next((k for k, v in VG_MUNICIPALITIES.items() if v == kommun_namn), None)
+            results.append({
+                "kommun_namn": kommun_namn,
+                "kommun_kod": kod,
+                "period": period_filter,
+                "value": value,
+                "kpi": kpi,
+                "kalla": "AF",
+                "enhet": "procent"
+            })
 
         return StarletteJSONResponse({
             "values": results,
