@@ -557,6 +557,150 @@ async def query_kolada(request: StarletteRequest):
 
 
 # ---------------------------------------------------------------------------
+# AF-endpoint för n8n — parsar xlsx från Arbetsförmedlingen
+# ---------------------------------------------------------------------------
+
+import io
+import re
+import openpyxl
+
+AF_TIDSSERIER_URL = "https://arbetsformedlingen.se/statistik/sok-statistik/tidigare-statistik-tidsserier"
+
+VG_KOMMUN_NAMN = set(VG_MUNICIPALITIES.values())
+
+
+async def query_af(request: StarletteRequest):
+    """GET /af — Hämtar AF arbetslöshetsdata för VG-kommuner.
+
+    Query params:
+      - kpi: 'arbetslöshet_total' (default) eller 'ungdomsarbetslöshet'
+      - period: t.ex. '2026-05' (default: senaste tillgängliga)
+      - debug: 'sheets' för att lista fliknamn
+    """
+    try:
+        kpi = request.query_params.get("kpi", "arbetslöshet_total")
+        period_filter = request.query_params.get("period", None)
+
+        # Steg 1: Hämta sidan och extrahera xlsx-URL
+        async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+            page_resp = await client.get(AF_TIDSSERIER_URL)
+            page_resp.raise_for_status()
+            html = page_resp.text
+
+        match = re.search(
+            r'href="(/download/[^"]+web-inskrivna-arbetslosa-andel-av-bas[^"]+\.xlsx)"',
+            html
+        )
+        if not match:
+            return StarletteJSONResponse(
+                {"error": "Kunde inte hitta xlsx-URL på AF-sidan"}, status_code=500
+            )
+
+        xlsx_url = "https://arbetsformedlingen.se" + match.group(1)
+
+        # Steg 2: Ladda ner xlsx
+        async with httpx.AsyncClient(timeout=60.0, follow_redirects=True) as client:
+            xlsx_resp = await client.get(xlsx_url)
+            xlsx_resp.raise_for_status()
+            xlsx_bytes = xlsx_resp.content
+
+        # Steg 3: Parsa xlsx med openpyxl
+        wb = openpyxl.load_workbook(io.BytesIO(xlsx_bytes), read_only=True, data_only=True)
+
+        if request.query_params.get("debug") == "sheets":
+            return StarletteJSONResponse({"sheets": wb.sheetnames, "xlsx_url": xlsx_url})
+
+        # Välj flik baserat på KPI
+        if kpi == "ungdomsarbetslöshet":
+            sheet_name = next(
+                (s for s in wb.sheetnames if "18" in s or "ungd" in s.lower()),
+                wb.sheetnames[0]
+            )
+        else:
+            sheet_name = next(
+                (s for s in wb.sheetnames if "tot" in s.lower() or "16-65" in s or "alla" in s.lower()),
+                wb.sheetnames[0]
+            )
+
+        ws = wb[sheet_name]
+        rows = list(ws.iter_rows(values_only=True))
+
+        if not rows:
+            return StarletteJSONResponse({"error": "Tom arbetsbok"}, status_code=500)
+
+        # Steg 4: Hitta rubrikrad med period-kolumner (format YYYY-MM)
+        header_row_idx = None
+        kommun_col_idx = None
+        period_col_idx = None
+
+        for i, row in enumerate(rows[:20]):
+            row_str = [str(c) if c is not None else "" for c in row]
+            if any(re.match(r"\d{4}-\d{2}", cell) for cell in row_str):
+                header_row_idx = i
+                # Kommunkolumn: leta efter "kommun" eller ta kolumn 0
+                for j, cell in enumerate(row_str):
+                    if "kommun" in cell.lower():
+                        kommun_col_idx = j
+                        break
+                if kommun_col_idx is None:
+                    kommun_col_idx = 0
+                # Periodkolumn
+                if period_filter:
+                    for j, cell in enumerate(row_str):
+                        if cell == period_filter:
+                            period_col_idx = j
+                            break
+                else:
+                    for j in range(len(row_str) - 1, -1, -1):
+                        if re.match(r"\d{4}-\d{2}", row_str[j]):
+                            period_col_idx = j
+                            period_filter = row_str[j]
+                            break
+                break
+
+        if header_row_idx is None or period_col_idx is None:
+            return StarletteJSONResponse(
+                {"error": "Kunde inte hitta rubrikrad", "sheets": wb.sheetnames},
+                status_code=500
+            )
+
+        # Steg 5: Filtrera VG-kommuner och bygg resultat
+        results = []
+        for row in rows[header_row_idx + 1:]:
+            if not row or row[kommun_col_idx] is None:
+                continue
+            kommun_namn = str(row[kommun_col_idx]).strip()
+            if kommun_namn in VG_KOMMUN_NAMN:
+                value = row[period_col_idx]
+                if value is not None:
+                    try:
+                        value = float(value)
+                    except (TypeError, ValueError):
+                        value = None
+                kod = next((k for k, v in VG_MUNICIPALITIES.items() if v == kommun_namn), None)
+                results.append({
+                    "kommun_namn": kommun_namn,
+                    "kommun_kod": kod,
+                    "period": period_filter,
+                    "value": value,
+                    "kpi": kpi,
+                    "kalla": "AF",
+                    "enhet": "procent"
+                })
+
+        return StarletteJSONResponse({
+            "values": results,
+            "count": len(results),
+            "period": period_filter,
+            "sheet": sheet_name,
+            "xlsx_url": xlsx_url
+        })
+
+    except Exception as exc:
+        return StarletteJSONResponse({"error": f"Fel: {exc}"}, status_code=500)
+
+
+# ---------------------------------------------------------------------------
 # Start
 # ---------------------------------------------------------------------------
 
@@ -565,6 +709,7 @@ mcp_app = mcp.streamable_http_app()
 app = Starlette(routes=[
     Route("/query", endpoint=query_scb, methods=["POST"]),
     Route("/kolada", endpoint=query_kolada, methods=["POST"]),
+    Route("/af", endpoint=query_af, methods=["GET"]),
     Mount("/", app=mcp_app),
 ])
 
