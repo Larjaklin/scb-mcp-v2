@@ -610,17 +610,17 @@ async def query_af(request: StarletteRequest):
         if request.query_params.get("debug") == "sheets":
             return StarletteJSONResponse({"sheets": wb.sheetnames, "xlsx_url": xlsx_url})
 
-        # Välj flik baserat på KPI
-        if kpi == "ungdomsarbetslöshet":
-            sheet_name = next(
-                (s for s in wb.sheetnames if "18" in s or "ungd" in s.lower()),
-                wb.sheetnames[0]
-            )
-        else:
-            sheet_name = next(
-                (s for s in wb.sheetnames if "tot" in s.lower() or "16-65" in s or "alla" in s.lower()),
-                wb.sheetnames[0]
-            )
+        if request.query_params.get("debug") == "rows":
+            ws_debug = wb[wb.sheetnames[2]]  # "Andel"-fliken (index 2)
+            rows_debug = list(ws_debug.iter_rows(values_only=True))
+            preview = [[str(c) for c in row] for row in rows_debug[:25]]
+            return StarletteJSONResponse({"preview": preview})
+
+        # Välj flik — "Andel" innehåller procentdata för alla åldersgrupper
+        sheet_name = next(
+            (s for s in wb.sheetnames if "andel" in s.lower()),
+            wb.sheetnames[0]
+        )
 
         ws = wb[sheet_name]
         rows = list(ws.iter_rows(values_only=True))
@@ -632,16 +632,18 @@ async def query_af(request: StarletteRequest):
         header_row_idx = None
         kommun_col_idx = None
         period_col_idx = None
+        alder_col_idx = None
 
         for i, row in enumerate(rows[:20]):
             row_str = [str(c) if c is not None else "" for c in row]
             if any(re.match(r"\d{4}-\d{2}", cell) for cell in row_str):
                 header_row_idx = i
-                # Kommunkolumn: leta efter "kommun" eller ta kolumn 0
+                # Hitta kolumner
                 for j, cell in enumerate(row_str):
                     if "kommun" in cell.lower():
                         kommun_col_idx = j
-                        break
+                    if "ålder" in cell.lower() or "åldersgrupp" in cell.lower():
+                        alder_col_idx = j
                 if kommun_col_idx is None:
                     kommun_col_idx = 0
                 # Periodkolumn
@@ -664,12 +666,23 @@ async def query_af(request: StarletteRequest):
                 status_code=500
             )
 
-        # Steg 5: Filtrera VG-kommuner och bygg resultat
+        # Bestäm åldersgrupp-filter
+        if kpi == "ungdomsarbetslöshet":
+            alder_filter = "18-24"
+        else:
+            alder_filter = None  # Totalt = alla åldrar eller "16-64"
+
+        # Steg 5: Filtrera VG-kommuner och åldersgrupp, bygg resultat
         results = []
         for row in rows[header_row_idx + 1:]:
             if not row or row[kommun_col_idx] is None:
                 continue
             kommun_namn = str(row[kommun_col_idx]).strip()
+            # Åldersgrupp-filter
+            if alder_filter and alder_col_idx is not None:
+                alder_val = str(row[alder_col_idx]).strip() if row[alder_col_idx] else ""
+                if alder_filter not in alder_val:
+                    continue
             if kommun_namn in VG_KOMMUN_NAMN:
                 value = row[period_col_idx]
                 if value is not None:
