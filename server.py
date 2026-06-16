@@ -628,62 +628,78 @@ async def query_af(request: StarletteRequest):
         if not rows:
             return StarletteJSONResponse({"error": "Tom arbetsbok"}, status_code=500)
 
-        # Steg 4: Hitta rubrikrad med period-kolumner (format YYYY-MM)
+        # Steg 4: Hitta rubrikrad — innehåller "PERIOD", "Totalt", "Unga 18-24" etc.
         header_row_idx = None
-        kommun_col_idx = None
         period_col_idx = None
-        alder_col_idx = None
+        kommun_col_idx = None
+        value_col_idx = None
 
-        for i, row in enumerate(rows[:20]):
-            row_str = [str(c) if c is not None else "" for c in row]
-            if any(re.match(r"\d{4}-\d{2}", cell) for cell in row_str):
+        for i, row in enumerate(rows[:25]):
+            row_str = [str(c).strip() if c is not None else "" for c in row]
+            if "PERIOD" in row_str:
                 header_row_idx = i
-                # Hitta kolumner
+                period_col_idx = row_str.index("PERIOD")
+                # Kommunkolumn
                 for j, cell in enumerate(row_str):
-                    if "kommun" in cell.lower():
+                    if cell.lower() == "kommun" or "kommun" in cell.lower():
                         kommun_col_idx = j
-                    if "ålder" in cell.lower() or "åldersgrupp" in cell.lower():
-                        alder_col_idx = j
-                if kommun_col_idx is None:
-                    kommun_col_idx = 0
-                # Periodkolumn
-                if period_filter:
+                        break
+                # Värdekolumn baserat på KPI
+                if kpi == "ungdomsarbetslöshet":
+                    # Hitta "Unga 18-24" kolumn
                     for j, cell in enumerate(row_str):
-                        if cell == period_filter:
-                            period_col_idx = j
+                        if "18-24" in cell or "unga" in cell.lower():
+                            value_col_idx = j
                             break
                 else:
-                    for j in range(len(row_str) - 1, -1, -1):
-                        if re.match(r"\d{4}-\d{2}", row_str[j]):
-                            period_col_idx = j
-                            period_filter = row_str[j]
+                    # Totalt
+                    for j, cell in enumerate(row_str):
+                        if cell.lower() == "totalt":
+                            value_col_idx = j
                             break
                 break
 
-        if header_row_idx is None or period_col_idx is None:
+        if header_row_idx is None:
             return StarletteJSONResponse(
-                {"error": "Kunde inte hitta rubrikrad", "sheets": wb.sheetnames},
+                {"error": "Kunde inte hitta rubrikrad med PERIOD", "sheets": wb.sheetnames},
                 status_code=500
             )
 
-        # Bestäm åldersgrupp-filter
-        if kpi == "ungdomsarbetslöshet":
-            alder_filter = "18-24"
-        else:
-            alder_filter = None  # Totalt = alla åldrar eller "16-64"
+        if value_col_idx is None:
+            return StarletteJSONResponse(
+                {"error": f"Kunde inte hitta värdekolumn för kpi={kpi}"},
+                status_code=500
+            )
 
-        # Steg 5: Filtrera VG-kommuner och åldersgrupp, bygg resultat
+        # Bestäm period — senaste om inget angivet
+        if not period_filter:
+            # Hitta senaste period i datan
+            latest = ""
+            for row in rows[header_row_idx + 1:]:
+                if not row or row[period_col_idx] is None:
+                    continue
+                p = str(row[period_col_idx]).strip()
+                if re.match(r"\d{4}-\d{2}", p) and p > latest:
+                    latest = p
+            period_filter = latest
+
+        # Steg 5: Filtrera VG-kommuner och period, bygg resultat
         results = []
+        seen = set()
         for row in rows[header_row_idx + 1:]:
-            if not row or row[kommun_col_idx] is None:
+            if not row or row[period_col_idx] is None:
+                continue
+            period_val = str(row[period_col_idx]).strip()
+            if period_val != period_filter:
+                continue
+            if kommun_col_idx is None or row[kommun_col_idx] is None:
                 continue
             kommun_namn = str(row[kommun_col_idx]).strip()
-            # Åldersgrupp-filter
-            if alder_filter and alder_col_idx is not None:
-                alder_val = str(row[alder_col_idx]).strip() if row[alder_col_idx] else ""
-                if alder_filter not in alder_val:
-                    continue
-            if kommun_namn in VG_KOMMUN_NAMN:
+            if kommun_namn not in VG_KOMMUN_NAMN:
+                continue
+            if kommun_namn in seen:
+                continue
+            seen.add(kommun_namn)
                 value = row[period_col_idx]
                 if value is not None:
                     try:
