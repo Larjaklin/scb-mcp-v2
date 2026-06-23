@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VG Statistikdashboard</title>
+  <script src="./chart.umd.min.js"></script>
+  <style>
+    :root {
+      --vgr-blue:   #003D6B;
+      --vgr-teal:   #007B8A;
+      --vgr-light:  #E8F4F7;
+      --vgr-accent: #E8501A;
+      --gray-100:   #F4F6F9;
+      --gray-200:   #E2E8EF;
+      --gray-600:   #6B7280;
+      --gray-800:   #1F2937;
+      --radius:     12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray-100); color: var(--gray-800); }
+
+    header {
+      background: var(--vgr-blue); color: #fff;
+      padding: 0 2rem; display: flex; align-items: center; justify-content: space-between;
+      height: 64px; position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    }
+    header .brand { display: flex; align-items: center; gap: 12px; }
+    header .logo {
+      width: 36px; height: 36px; background: var(--vgr-teal); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1rem;
+    }
+    header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: .3px; }
+    header .subtitle { font-size: .75rem; opacity: .7; }
+    #data-status { font-size: .72rem; background: rgba(255,255,255,.15); padding: 4px 10px; border-radius: 20px; }
+
+    nav {
+      background: #fff; border-bottom: 2px solid var(--gray-200);
+      display: flex; overflow-x: auto; padding: 0 2rem;
+    }
+    nav button {
+      background: none; border: none; padding: 1rem 1.2rem;
+      font-size: .88rem; font-weight: 600; color: var(--gray-600);
+      cursor: pointer; white-space: nowrap;
+      border-bottom: 3px solid transparent; transition: color .2s, border-color .2s;
+    }
+    nav button:hover { color: var(--vgr-blue); }
+    nav button.active { color: var(--vgr-blue); border-bottom-color: var(--vgr-teal); }
+
+    main { max-width: 1300px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .section { display: none; }
+    .section.visible { display: block; }
+
+    .section-header { margin-bottom: 1.5rem; }
+    .section-header h2 { font-size: 1.4rem; color: var(--vgr-blue); margin-bottom: .25rem; }
+    .section-header p { color: var(--gray-600); font-size: .9rem; max-width: 700px; line-height: 1.55; }
+
+    /* KPI CARDS */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .kpi-card {
+      background: #fff; border-radius: var(--radius); padding: 1.25rem 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07); border-left: 4px solid var(--vgr-teal);
+      cursor: pointer; transition: box-shadow .15s, transform .15s;
+    }
+    .kpi-card:hover { box-shadow: 0 4px 12px rgba(0,85,135,.15); transform: translateY(-1px); }
+    .kpi-card .kpi-label { font-size: .76rem; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--gray-600); margin-bottom: .4rem; }
+    .kpi-card .kpi-value { font-size: 2rem; font-weight: 800; color: var(--vgr-blue); line-height: 1; }
+    .kpi-card .kpi-sub { font-size: .78rem; color: var(--gray-600); margin-top: .3rem; }
+    .kpi-card .kpi-trend { font-size: .78rem; margin-top: .4rem; font-weight: 600; }
+    .trend-up   { color: #16a34a; }
+    .trend-down { color: var(--vgr-accent); }
+    .kpi-card.accent { border-left-color: var(--vgr-accent); }
+    .kpi-card.accent .kpi-value { color: var(--vgr-accent); }
+
+    /* CHART */
+    .chart-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(440px,1fr)); gap: 1.5rem; }
+    .chart-card { background: #fff; border-radius: var(--radius); padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+    .chart-card.wide { grid-column: 1 / -1; }
+    .chart-card h3 { font-size: .95rem; font-weight: 700; color: var(--vgr-blue); margin-bottom: .25rem; }
+    .chart-card .chart-source { font-size: .72rem; color: var(--gray-600); margin-bottom: 1rem; }
+    .chart-card canvas { max-height: 420px; }
+
+    /* CONTROLS */
+    .controls-row { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; margin-bottom: 1rem; }
+    .controls-row label { font-size: .85rem; font-weight: 600; color: var(--gray-600); }
+    .controls-row select {
+      border: 1px solid var(--gray-200); border-radius: 8px;
+      padding: .45rem .75rem; font-size: .85rem; background: #fff; cursor: pointer;
+    }
+    .controls-row select:focus { outline: none; border-color: var(--vgr-teal); }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; background: #fff; border-radius: var(--radius); box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    th { background: var(--vgr-blue); color: #fff; padding: .6rem .9rem; text-align: left; font-weight: 600; white-space: nowrap; cursor: pointer; user-select: none; }
+    th:hover { background: #004d85; }
+    td { padding: .55rem .9rem; border-bottom: 1px solid var(--gray-200); }
+    tr:nth-child(even) td { background: var(--gray-100); }
+    tr:hover td { background: var(--vgr-light); }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+    /* KOMMUNER TAB */
+    .compare-layout { display: grid; grid-template-columns: 260px 1fr; gap: 1.5rem; align-items: start; }
+    .compare-sidebar {
+      background: #fff; border-radius: var(--radius); padding: 1.25rem;
+      position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow-y: auto;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+    }
+    .compare-sidebar h4 { font-size: .85rem; font-weight: 700; color: var(--vgr-blue); margin-bottom: .75rem; }
+    .search-input {
+      width: 100%; border: 1px solid var(--gray-200); border-radius: 8px;
+      padding: .5rem .75rem; margin-bottom: .75rem; font-size: .85rem;
+    }
+    .search-input:focus { outline: none; border-color: var(--vgr-teal); }
+    .quick-filters { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .75rem; }
+    .qf-btn {
+      font-size: .75rem; font-weight: 600; padding: .25rem .65rem;
+      border-radius: 20px; border: 1px solid var(--gray-200);
+      background: var(--gray-100); color: var(--gray-600); cursor: pointer; transition: all .15s;
+    }
+    .qf-btn:hover, .qf-btn.active { background: var(--vgr-blue); color: #fff; border-color: var(--vgr-blue); }
+    .delregion-group { margin-bottom: .5rem; }
+    .delregion-group summary {
+      font-weight: 700; cursor: pointer; padding: .4rem 0;
+      color: var(--vgr-blue); font-size: .82rem; list-style: none; display: flex; align-items: center; gap: .4rem;
+    }
+    .delregion-group summary::-webkit-details-marker { display: none; }
+    .delregion-group summary::before { content: '\25B6'; font-size: .65rem; transition: transform .2s; }
+    .delregion-group[open] summary::before { transform: rotate(90deg); }
+    .kommune-item { display: flex; align-items: center; gap: .5rem; padding: .2rem 0 .2rem .75rem; font-size: .82rem; cursor: pointer; }
+    .kommune-item input[type=checkbox] { accent-color: var(--vgr-teal); cursor: pointer; }
+    .kommune-item label { cursor: pointer; flex: 1; }
+    .selected-count { font-size: .75rem; color: var(--gray-600); margin-top: .5rem; }
+    .compare-main { display: flex; flex-direction: column; gap: 1.25rem; }
+    .chart-area {
+      background: #fff; border-radius: var(--radius); padding: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07); position: relative; min-height: 200px;
+    }
+    .chart-area canvas { max-height: 480px; }
+    .chart-area h3 { font-size: .95rem; font-weight: 700; color: var(--vgr-blue); margin-bottom: 1rem; }
+    .spinner-overlay {
+      position: absolute; inset: 0; background: rgba(255,255,255,.85);
+      border-radius: var(--radius); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: .75rem; z-index: 10;
+    }
+    .spinner-overlay.hidden { display: none; }
+    .spinner { width: 32px; height: 32px; border: 3px solid var(--gray-200); border-top-color: var(--vgr-teal); border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-banner { background: #fef2f2; border-left: 4px solid var(--vgr-accent); padding: 1rem 1.25rem; border-radius: 0 var(--radius) var(--radius) 0; font-size: .875rem; margin-bottom: 1rem; color: #991b1b; }
+    footer { text-align: center; padding: 2rem; font-size: .78rem; color: var(--gray-600); border-top: 1px solid var(--gray-200); margin-top: 3rem; }
+
+    @media (max-width: 768px) {
+      .compare-layout { grid-template-columns: 1fr; }
+      .compare-sidebar { position: static; max-height: 280px; }
+      .chart-grid { grid-template-columns: 1fr; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">VG</div>
+    <div>
+      <div class="subtitle">Västra Götalandsregionen</div>
+      <h1>Statistikdashboard</h1>
+    </div>
+  </div>
+  <span id="data-status">Laddar...</span>
+</header>
+
+<nav>
+  <button class="active" onclick="show('oversikt',this)">&#128202; Översikt</button>
+  <button onclick="show('ranking',this)">&#127942; Kommunranking</button>
+  <button onclick="show('trender',this)">&#128200; Trender</button>
+  <button onclick="show('kommuner',this)">&#128506;&#65039; Kommuner</button>
+  <button onclick="show('tabell',this)">&#128203; Tabell</button>
+</nav>
+
+<main>
+  <div id="error-container"></div>
+
+  <!-- ÖVERSIKT -->
+  <section id="oversikt" class="section visible">
+    <div class="section-header">
+      <h2>Översikt — Västra Götaland</h2>
+      <p>Senaste tillgängliga värde per indikator. Klicka på ett kort för att se kommunranking. Median av alla 49 kommuner visas om inget regionvärde finns.</p>
+    </div>
+    <div id="kpi-overview-grid" class="kpi-grid">
+      <div style="grid-column:1/-1;padding:3rem;text-align:center;color:var(--gray-600)">
+        <div class="spinner" style="margin:0 auto 1rem"></div><br>Hämtar data från Supabase...
+      </div>
+    </div>
+  </section>
+
+  <!-- RANKING -->
+  <section id="ranking" class="section">
+    <div class="section-header">
+      <h2>Kommunranking</h2>
+      <p>Alla 49 VG-kommuner sorterade efter valt indikatorvärde.</p>
+    </div>
+    <div class="controls-row">
+      <label>Indikator:</label>
+      <select id="ranking-kpi" onchange="onRankingChange()"></select>
+      <label>År:</label>
+      <select id="ranking-year" onchange="renderRanking()"></select>
+    </div>
+    <div class="chart-card wide">
+      <h3 id="ranking-title">—</h3>
+      <div class="chart-source" id="ranking-source">—</div>
+      <canvas id="chart-ranking" style="max-height:700px"></canvas>
+    </div>
+  </section>
+
+  <!-- TRENDER -->
+  <section id="trender" class="section">
+    <div class="section-header">
+      <h2>Trender över tid</h2>
+      <p>Välj indikator och en eller flera kommuner för att se tidsutvecklingen.</p>
+    </div>
+    <div class="controls-row">
+      <label>Indikator:</label>
+      <select id="trend-kpi" onchange="renderTrends()"></select>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card wide">
+        <h3 id="trend-title">—</h3>
+        <div class="chart-source" id="trend-source">—</div>
+        <canvas id="chart-trends"></canvas>
+      </div>
+    </div>
+    <div style="margin-top:1rem">
+      <p style="font-size:.82rem;color:var(--gray-600);margin-bottom:.5rem">Välj kommuner att visa (Ctrl+klick för flera):</p>
+      <select id="trend-municipalities" multiple size="8"
+        style="width:100%;border:1px solid var(--gray-200);border-radius:8px;padding:.5rem;font-size:.83rem;background:#fff"
+        onchange="renderTrends()"></select>
+    </div>
+  </section>
+
+  <!-- KOMMUNER (jämför) -->
+  <section id="kommuner" class="section">
+    <div class="section-header">
+      <h2>Kommunjämförelse</h2>
+      <p>Välj kommuner i sidopanelen och ett nyckeltal för att jämföra direkt.</p>
+    </div>
+    <div class="compare-layout">
+      <div class="compare-sidebar">
+        <h4>Välj kommuner</h4>
+        <input class="search-input" id="muni-search" placeholder="Sök kommun..." oninput="filterMunis()" />
+        <div class="quick-filters">
+          <button class="qf-btn" onclick="selectAll()">Alla</button>
+          <button class="qf-btn" onclick="clearAll()">Rensa</button>
+          <button class="qf-btn" onclick="selectTop5()">Topp 5</button>
+        </div>
+        <div id="muni-list"></div>
+        <div class="selected-count" id="selected-count">0 kommuner valda</div>
+      </div>
+      <div class="compare-main">
+        <div class="controls-row">
+          <label>Indikator:</label>
+          <select id="compare-kpi" onchange="onCompareKpiChange()"></select>
+          <label>År:</label>
+          <select id="compare-year" onchange="renderCompare()"></select>
+        </div>
+        <div class="chart-area">
+          <h3 id="compare-title">—</h3>
+          <div class="spinner-overlay hidden" id="compare-spinner">
+            <div class="spinner"></div><span style="font-size:.85rem;color:var(--gray-600)">Laddar...</span>
+          </div>
+          <canvas id="chart-compare" style="max-height:420px"></canvas>
+        </div>
+        <div class="chart-area">
+          <h3>Tidsserie — valda kommuner</h3>
+          <canvas id="chart-compare-trend" style="max-height:300px"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TABELL -->
+  <section id="tabell" class="section">
+    <div class="section-header">
+      <h2>Datatabell</h2>
+      <p>Rådata per indikator. Klicka på kolumnrubriker för att sortera.</p>
+    </div>
+    <div class="controls-row">
+      <label>Indikator:</label>
+      <select id="table-kpi" onchange="onTableKpiChange()"></select>
+      <label>År:</label>
+      <select id="table-year" onchange="renderTable()"></select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortTable('kommun_namn')">Kommun ↕</th>
+            <th onclick="sortTable('ar')" class="num">År ↕</th>
+            <th onclick="sortTable('varde')" class="num">Värde ↕</th>
+            <th onclick="sortTable('enhet')">Enhet</th>
+            <th onclick="sortTable('kalla')">Källa</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Västra Götalandsregionen · Data: SCB, Kolada, Arbetsförmedlingen ·
+  Uppdateras månadsvis via n8n
+</footer>
+
+<script>
+// ─── Config ────────────────────────────────────────────────────────────────────────────
+const SB_URL = 'https://xqeyxlonarwcqykbemsg.supabase.co/rest/v1';
+const SB_KEY = 'sb_publishable_f_plG5zfiWjL9jWco0T-ww_D1Bd7Caq';
+
+const COLORS = [
+  '#003D6B','#007B8A','#E8501A','#16a34a','#7C3AED',
+  '#DC2626','#D97706','#0369A1','#9D174D','#065F46',
+  '#1D4ED8','#92400E','#4B5563','#BE185D','#047857'
+];
+
+const DELREGIONER = {
+  'Göteborgsregionen':  ['Ale','Alingås','Göteborg','Härryda','Kungsbacka','Kungälv','Lerum','Lilla Edet','Mölndal','Partille','Stenungsund','Tjörn','Öckerö'],
+  'Sjuhärad':           ['Bollebygd','Borås','Herrljunga','Mark','Svenljunga','Tranemo','Ulricehamn','Vårgårda'],
+  'Skaraborg':          ['Essunga','Falköping','Grästorp','Götene','Hjo','Karlsborg','Linköping','Mariestad','Skara','Skövde','Tibro','Tidaholm','Töreboda','Vara'],
+  'Fyrbodal':           ['Bengtsfors','Dals-Ed','Färgelanda','Lysekil','Mellerud','Munkedal','Orust','Sotenäs','Strömstad','Tanum','Trollhättan','Uddevalla','Vänersborg','Åmål'],
+  'Gullspång/Mariestad':['Gullspång'],
+};
+
+// ─── State ────────────────────────────────────────────────────────────────────────────
+let indicators = [];   // [{kpi, enhet, kalla, ...}]
+let allData    = [];   // all vg_kommundata rows
+let sortCol    = 'varde';
+let sortDir    = -1;
+let charts     = {};   // chart instances keyed by id
+
+// ─── Supabase ──────────────────────────────────────────────────────────────────────────
+async function sb(table, params = '') {
+  const r = await fetch(`${SB_URL}/${table}?${params}`, {
+    headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
+  });
+  if (!r.ok) throw new Error(`Supabase ${r.status}: ${await r.text()}`);
+  return r.json();
+}
+
+function showError(msg) {
+  document.getElementById('error-container').innerHTML =
+    `<div class="error-banner">⚠ ${msg}</div>`;
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    [indicators, allData] = await Promise.all([
+      sb('vg_indikatorer', 'aktiv=eq.true&order=kpi.asc'),
+      sb('vg_kommundata',  'bransch=eq.alla&kon=eq.totalt&order=ar.desc,kommun_namn.asc&limit=20000')
+    ]);
+
+    if (!indicators.length) {
+      showError('Inga aktiva indikatorer i vg_indikatorer — kontrollera att flödet har körts.');
+      document.getElementById('kpi-overview-grid').innerHTML = '<p style="padding:2rem;color:var(--gray-600)">Ingen data.</p>';
+      return;
+    }
+
+    const years  = [...new Set(allData.map(r => r.ar))].sort((a,b) => b-a);
+    const latest = years[0] || '—';
+    document.getElementById('data-status').textContent =
+      `${allData.length.toLocaleString('sv-SE')} rader · Senaste: ${latest}`;
+
+    populateSelects();
+    buildMuniList();
+    renderOverview();
+
+  } catch (e) {
+    showError(`Kunde inte ansluta till Supabase: ${e.message}`);
+    document.getElementById('kpi-overview-grid').innerHTML =
+      '<p style="padding:2rem;color:var(--gray-600)">Fel vid laddning.</p>';
+  }
+}
+
+// ─── Selects ────────────────────────────────────────────────────────────────────────
+function populateSelects() {
+  const opts = indicators.map(i =>
+    `<option value="${i.kpi}">${fmtLabel(i.kpi)} (${i.kalla})</option>`
+  ).join('');
+  ['ranking-kpi','trend-kpi','compare-kpi','table-kpi'].forEach(id => {
+    document.getElementById(id).innerHTML = opts;
+  });
+
+  // Populate municipality multi-select for trends tab
+  const munis = [...new Set(allData.map(r => r.kommun_namn))].sort();
+  const muniOpts = munis.map(m => `<option value="${m}">${m}</option>`).join('');
+  document.getElementById('trend-municipalities').innerHTML = muniOpts;
+  // Pre-select Göteborg, Borås, Skövde
+  ['Göteborg','Borås','Skövde'].forEach(m => {
+    const o = [...document.getElementById('trend-municipalities').options].find(o => o.value === m);
+    if (o) o.selected = true;
+  });
+
+  onRankingChange();
+  onTableKpiChange();
+  onCompareKpiChange();
+}
+
+function onRankingChange() {
+  const kpi = document.getElementById('ranking-kpi').value;
+  fillYearSelect('ranking-year', kpi);
+  renderRanking();
+}
+function onTableKpiChange() {
+  const kpi = document.getElementById('table-kpi').value;
+  fillYearSelect('table-year', kpi, true);
+  renderTable();
+}
+function onCompareKpiChange() {
+  const kpi = document.getElementById('compare-kpi').value;
+  fillYearSelect('compare-year', kpi);
+  renderCompare();
+}
+
+function fillYearSelect(id, kpi, includeAll = false) {
+  const years = [...new Set(allData.filter(r => r.kpi === kpi).map(r => r.ar))].sort((a,b) => b-a);
+  const allOpt = includeAll ? '<option value="">Alla år</option>' : '';
+  document.getElementById(id).innerHTML = allOpt + years.map(y => `<option value="${y}">${y}</option>`).join('');
+}
+
+// ─── Overview ──────────────────────────────────────────────────────────────────────────
+function renderOverview() {
+  const grid = document.getElementById('kpi-overview-grid');
+  if (!allData.length) {
+    grid.innerHTML = '<p style="padding:2rem;color:var(--gray-600)">Ingen data inläst ännu. Kör n8n-flödet först.</p>';
+    return;
+  }
+
+  grid.innerHTML = indicators.map((ind, idx) => {
+    const rows = allData.filter(r => r.kpi === ind.kpi);
+    if (!rows.length) return '';
+    const maxYear = Math.max(...rows.map(r => r.ar));
+    const cur = rows.filter(r => r.ar === maxYear);
+    const prv = rows.filter(r => r.ar === maxYear - 1);
+    const med = arr => {
+      const v = arr.map(r => r.varde).filter(v => v != null).sort((a,b) => a-b);
+      if (!v.length) return null;
+      const m = Math.floor(v.length/2);
+      return v.length%2 ? v[m] : (v[m-1]+v[m])/2;
+    };
+    const cMed = med(cur), pMed = med(prv);
+    if (cMed == null) return '';
+
+    let trendHtml = '';
+    if (pMed != null && Math.abs(pMed) > 0) {
+      const delta = cMed - pMed;
+      const pct = Math.abs(delta / pMed * 100).toFixed(1);
+      if (Math.abs(delta) > 0.005 * Math.abs(pMed)) {
+        const cls = delta > 0 ? 'trend-up' : 'trend-down';
+        trendHtml = `<div class="kpi-trend ${cls}">${delta > 0 ? '↑' : '↓'} ${pct}% från ${maxYear-1}</div>`;
+      }
+    }
+
+    const isAccent = idx % 5 === 2;
+    return `
+      <div class="kpi-card${isAccent?' accent':''}" onclick="goRanking('${ind.kpi}')">
+        <div class="kpi-label">${fmtLabel(ind.kpi)}</div>
+        <div class="kpi-value">${fmtVal(cMed, ind.enhet)}</div>
+        <div class="kpi-sub">${ind.enhet || ''} · Median VG · ${maxYear}</div>
+        ${trendHtml}
+        <div class="kpi-sub" style="margin-top:.3rem;font-size:.7rem">${ind.kalla}</div>
+      </div>`;
+  }).join('');
+
+  if (!grid.innerHTML.trim()) {
+    grid.innerHTML = '<p style="padding:2rem;color:var(--gray-600)">Inga indikatorer har data ännu.</p>';
+  }
+}
+
+function goRanking(kpi) {
+  document.getElementById('ranking-kpi').value = kpi;
+  onRankingChange();
+  show('ranking', document.querySelector('nav button:nth-child(2)'));
+}
+
+// ─── Ranking ───────────────────────────────────────────────────────────────────────────
+function renderRanking() {
+  const kpi  = document.getElementById('ranking-kpi').value;
+  const year = parseInt(document.getElementById('ranking-year').value);
+  if (!kpi || !year) return;
+
+  const ind  = indicators.find(i => i.kpi === kpi);
+  const rows = allData.filter(r => r.kpi === kpi && r.ar === year && r.varde != null)
+                      .sort((a,b) => b.varde - a.varde);
+
+  document.getElementById('ranking-title').textContent  = `${fmtLabel(kpi)} — ${year}`;
+  document.getElementById('ranking-source').textContent = `Källa: ${ind?.kalla || '?'} · Enhet: ${ind?.enhet || '?'}`;
+
+  destroyChart('chart-ranking');
+  if (!rows.length) return;
+
+  charts['chart-ranking'] = new Chart(
+    document.getElementById('chart-ranking').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: rows.map(r => r.kommun_namn),
+      datasets: [{
+        label: ind?.enhet || 'värde',
+        data: rows.map(r => r.varde),
+        backgroundColor: rows.map((_,i) => i===0 ? COLORS[2] : COLORS[0]+'CC'),
+        borderRadius: 3,
+      }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => ` ${fmtVal(ctx.raw, ind?.enhet)} ${ind?.enhet||''}` }
+      }},
+      scales: { x: { grid: { color: '#f0f0f0' } }, y: { ticks: { font: { size: 11 } } } }
+    }
+  });
+}
+
+// ─── Trender ───────────────────────────────────────────────────────────────────────────
+function renderTrends() {
+  const kpi = document.getElementById('trend-kpi').value;
+  const ind = indicators.find(i => i.kpi === kpi);
+  const sel = [...document.getElementById('trend-municipalities').selectedOptions].map(o => o.value);
+  if (!sel.length) return;
+
+  const kpiData = allData.filter(r => r.kpi === kpi && r.varde != null);
+  const years   = [...new Set(kpiData.map(r => r.ar))].sort((a,b) => a-b);
+
+  document.getElementById('trend-title').textContent  = `${fmtLabel(kpi)} — tidsserie`;
+  document.getElementById('trend-source').textContent = `Källa: ${ind?.kalla||'?'} · Enhet: ${ind?.enhet||'?'}`;
+
+  destroyChart('chart-trends');
+  charts['chart-trends'] = new Chart(
+    document.getElementById('chart-trends').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: sel.map((muni, idx) => {
+        const md = kpiData.filter(r => r.kommun_namn === muni);
+        return {
+          label: muni,
+          data: years.map(y => md.find(r => r.ar === y)?.varde ?? null),
+          borderColor: COLORS[idx % COLORS.length],
+          backgroundColor: COLORS[idx % COLORS.length] + '18',
+          pointRadius: 4, tension: 0.3, spanGaps: true
+        };
+      })
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtVal(ctx.raw, ind?.enhet)} ${ind?.enhet||''}` } }
+      },
+      scales: {
+        y: { grid: { color: '#f0f0f0' }, ticks: { callback: v => v?.toLocaleString('sv-SE') } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+// ─── Kommuner (compare) ─────────────────────────────────────────────────────────
+function buildMuniList() {
+  const munis = [...new Set(allData.map(r => r.kommun_namn))].sort();
+  const list  = document.getElementById('muni-list');
+  list.innerHTML = Object.entries(DELREGIONER).map(([dr, dmunis]) => {
+    const items = dmunis.filter(m => munis.includes(m)).map(m => `
+      <div class="kommune-item" data-name="${m}">
+        <input type="checkbox" id="cb-${m}" value="${m}" onchange="updateSelectedCount();renderCompare()">
+        <label for="cb-${m}">${m}</label>
+      </div>`).join('');
+    return items ? `<details class="delregion-group"><summary>${dr}</summary>${items}</details>` : '';
+  }).join('');
+  // Pre-select 5 largest
+  ['Göteborg','Borås','Mölndal','Trollhättan','Skövde'].forEach(m => {
+    const cb = document.getElementById(`cb-${m}`);
+    if (cb) cb.checked = true;
+  });
+  updateSelectedCount();
+}
+
+function updateSelectedCount() {
+  const n = document.querySelectorAll('#muni-list input:checked').length;
+  document.getElementById('selected-count').textContent = `${n} kommuner valda`;
+}
+
+function filterMunis() {
+  const q = document.getElementById('muni-search').value.toLowerCase();
+  document.querySelectorAll('.kommune-item').forEach(el => {
+    el.style.display = el.dataset.name.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+function selectAll()  { document.querySelectorAll('#muni-list input').forEach(cb => cb.checked=true);  updateSelectedCount(); renderCompare(); }
+function clearAll()   { document.querySelectorAll('#muni-list input').forEach(cb => cb.checked=false); updateSelectedCount(); renderCompare(); }
+function selectTop5() {
+  clearAll();
+  const kpi  = document.getElementById('compare-kpi').value;
+  const year = parseInt(document.getElementById('compare-year').value);
+  const top5 = allData.filter(r => r.kpi===kpi && r.ar===year && r.varde!=null)
+    .sort((a,b) => b.varde-a.varde).slice(0,5).map(r => r.kommun_namn);
+  top5.forEach(m => { const cb = document.getElementById(`cb-${m}`); if (cb) cb.checked=true; });
+  updateSelectedCount(); renderCompare();
+}
+
+function renderCompare() {
+  const kpi  = document.getElementById('compare-kpi').value;
+  const year = parseInt(document.getElementById('compare-year').value);
+  const sel  = [...document.querySelectorAll('#muni-list input:checked')].map(cb => cb.value);
+  const ind  = indicators.find(i => i.kpi === kpi);
+
+  document.getElementById('compare-title').textContent = `${fmtLabel(kpi)} — ${year}`;
+
+  // Bar chart (selected municipalities, sorted)
+  const rows = allData.filter(r => r.kpi===kpi && r.ar===year && sel.includes(r.kommun_namn) && r.varde!=null)
+                      .sort((a,b) => b.varde-a.varde);
+
+  destroyChart('chart-compare');
+  if (rows.length) {
+    charts['chart-compare'] = new Chart(
+      document.getElementById('chart-compare').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: rows.map(r => r.kommun_namn),
+        datasets: [{
+          label: ind?.enhet||'värde', data: rows.map(r => r.varde),
+          backgroundColor: rows.map((_,i) => COLORS[i % COLORS.length] + 'CC'), borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, plugins: { legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ` ${fmtVal(ctx.raw, ind?.enhet)} ${ind?.enhet||''}` } }
+        },
+        scales: { y: { grid: { color: '#f0f0f0' } }, x: { grid: { display:false } } }
+      }
+    });
+  }
+
+  // Trend chart (selected municipalities)
+  const kpiData = allData.filter(r => r.kpi===kpi && sel.includes(r.kommun_namn) && r.varde!=null);
+  const years   = [...new Set(kpiData.map(r => r.ar))].sort((a,b) => a-b);
+
+  destroyChart('chart-compare-trend');
+  if (kpiData.length) {
+    charts['chart-compare-trend'] = new Chart(
+      document.getElementById('chart-compare-trend').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: years,
+        datasets: sel.map((muni, idx) => {
+          const md = kpiData.filter(r => r.kommun_namn===muni);
+          return {
+            label: muni,
+            data: years.map(y => md.find(r => r.ar===y)?.varde ?? null),
+            borderColor: COLORS[idx % COLORS.length],
+            backgroundColor: COLORS[idx % COLORS.length]+'15',
+            pointRadius: 3, tension: 0.3, spanGaps: true
+          };
+        })
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } },
+        scales: {
+          y: { grid: { color: '#f0f0f0' } , ticks: { callback: v => v?.toLocaleString('sv-SE') } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+}
+
+// ─── Tabell ───────────────────────────────────────────────────────────────────────────
+function renderTable() {
+  const kpi     = document.getElementById('table-kpi').value;
+  const yearVal = document.getElementById('table-year').value;
+  let rows = allData.filter(r => r.kpi === kpi);
+  if (yearVal) rows = rows.filter(r => r.ar === parseInt(yearVal));
+  rows = [...rows].sort((a, b) => {
+    const av = a[sortCol] ?? '', bv = b[sortCol] ?? '';
+    return (typeof av === 'number' ? (av-bv)*sortDir : String(av).localeCompare(String(bv),'sv')*sortDir);
+  });
+  document.getElementById('table-body').innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.kommun_namn}</td>
+      <td class="num">${r.ar}</td>
+      <td class="num">${r.varde != null ? r.varde.toLocaleString('sv-SE') : '—'}</td>
+      <td>${r.enhet||'—'}</td>
+      <td>${r.kalla}</td>
+    </tr>`).join('');
+}
+function sortTable(col) {
+  sortDir = (sortCol === col) ? sortDir * -1 : -1;
+  sortCol = col;
+  renderTable();
+}
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────────────
+function fmtLabel(kpi) {
+  return kpi.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function fmtVal(v, enhet) {
+  if (v == null) return '—';
+  if (enhet === 'procent' || enhet === '%') return v.toFixed(1) + ' %';
+  if (v >= 1e9) return (v/1e9).toFixed(2) + ' mdr';
+  if (v >= 1e6) return (v/1e6).toFixed(1) + ' M';
+  if (v >= 1000) return Math.round(v).toLocaleString('sv-SE');
+  return v % 1 === 0 ? v.toLocaleString('sv-SE') : v.toFixed(1);
+}
+
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+// ─── Tab switching ─────────────────────────────────────────────────────────────────────────
+function show(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.getElementById(id).classList.add('visible');
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  // Lazy render on first visit
+  if (id === 'ranking') renderRanking();
+  if (id === 'trender') renderTrends();
+  if (id === 'kommuner') renderCompare();
+  if (id === 'tabell') renderTable();
+}
+
+// ─── Start ────────────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
