@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Västra Götaland – Polisstationer</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; color: #222; }
+
+    header {
+      background: #1a3a6b;
+      color: #fff;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    header h1 { font-size: 1.3rem; font-weight: 600; }
+    header span { font-size: 0.9rem; opacity: 0.75; }
+
+    #controls {
+      background: #fff;
+      border-bottom: 1px solid #dde3ec;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .legend-item input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; }
+    .dot {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      border: 2px solid rgba(0,0,0,0.3);
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    #count-bar {
+      margin-left: auto;
+      font-size: 0.83rem;
+      color: #555;
+    }
+
+    #map {
+      height: calc(100vh - 110px);
+      width: 100%;
+    }
+
+    .leaflet-popup-content-wrapper {
+      border-radius: 8px;
+      font-size: 0.88rem;
+    }
+    .popup-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+    .popup-type {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .popup-address { color: #444; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Västra Götaland – Samhällsservice</h1>
+    <span>Interaktiv karta · Klicka på en markör för information</span>
+  </div>
+</header>
+
+<div id="controls">
+  <label class="legend-item">
+    <input type="checkbox" id="cb-polis" checked />
+    <span class="dot" style="background:#1a3a6b;"></span>
+    Polisstationer
+  </label>
+  <!-- Brandstationer och vårdcentraler läggs till senare -->
+  <span id="count-bar">Visar <strong id="visible-count">0</strong> platser</span>
+</div>
+
+<div id="map"></div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+
+const polisStationer = [
+  // Göteborg
+  { namn: "Polisen Göteborg City",              adress: "Stampgatan 28, Göteborg",          lat: 57.7083, lng: 11.9746 },
+  { namn: "Polisen Göteborg Passcentralen",     adress: "Stampgatan 34, Göteborg",          lat: 57.7080, lng: 11.9750 },
+  { namn: "Polisen Göteborg Hisingen",          adress: "Vädursgatan 5, Göteborg",          lat: 57.7248, lng: 11.9381 },
+  { namn: "Polisen Göteborg Nordost (Hjällbo)", adress: "Hjällbo Torg 1, Göteborg",         lat: 57.7680, lng: 12.0168 },
+  { namn: "Polisen Göteborg Hittegodscentralen",adress: "Odinsgatan 28B, Göteborg",         lat: 57.7134, lng: 11.9697 },
+  { namn: "Polisen Göteborg Beslaget",          adress: "Exportgatan 43, Hisings Backa",    lat: 57.7260, lng: 11.9510 },
+  // Norra Bohuslän
+  { namn: "Polisen Uddevalla",                  adress: "Lagerbergsgatan 35, Uddevalla",    lat: 58.3490, lng: 11.9380 },
+  { namn: "Polisen Stenungsund",                adress: "Stationsgatan 2, Stenungsund",     lat: 58.0715, lng: 11.8244 },
+  { namn: "Polisen Kungälv",                    adress: "Strandgatan 12, Kungälv",          lat: 57.8705, lng: 11.9745 },
+  { namn: "Polisen Lysekil",                    adress: "Kungsgatan 25, Lysekil",           lat: 58.2757, lng: 11.4358 },
+  { namn: "Polisen Sotenäs (Kungshamn)",        adress: "Hamngatan 6, Kungshamn",           lat: 58.3717, lng: 11.2542 },
+  { namn: "Polisen Tanumshede",                 adress: "Apoteksvägen 3, Tanumshede",       lat: 58.7234, lng: 11.3287 },
+  { namn: "Polisen Strömstad",                  adress: "Norra Bergsgatan 16, Strömstad",   lat: 58.9352, lng: 11.1697 },
+  // Dalsland
+  { namn: "Polisen Åmål",                       adress: "Storgatan 8, Åmål",                lat: 59.0451, lng: 12.7034 },
+  { namn: "Polisen Bengtsfors",                 adress: "Järnvägsgatan 2, Bengtsfors",      lat: 59.0342, lng: 12.2275 },
+  { namn: "Polisen Mellerud",                   adress: "Storgatan 14, Mellerud",           lat: 58.7016, lng: 12.4633 },
+  // Västra Götaland norr
+  { namn: "Polisen Trollhättan",                adress: "Klintvägen 2, Trollhättan",        lat: 58.2835, lng: 12.2857 },
+  { namn: "Polisen Vänersborg",                 adress: "Sundsgatan 53, Vänersborg",        lat: 58.3797, lng: 12.3231 },
+  { namn: "Polisen Lidköping",                  adress: "Järnvägsgatan 5, Lidköping",       lat: 58.5059, lng: 13.1591 },
+  { namn: "Polisen Mariestad",                  adress: "Drottninggatan 34, Mariestad",     lat: 58.7098, lng: 13.8274 },
+  // Sjuhärad
+  { namn: "Polisen Borås",                      adress: "Sandgärdsgatan 15, Borås",         lat: 57.7210, lng: 12.9398 },
+  { namn: "Polisen Ulricehamn",                 adress: "Boråsvägen 80, Ulricehamn",        lat: 57.7920, lng: 13.4215 },
+  { naam: "Polisen Herrljunga",                 adress: "Järnvägsgatan 5, Herrljunga",      lat: 58.0742, lng: 13.0239 },
+  { namn: "Polisen Alingsås",                   adress: "Kaptensgatan 1, Alingsås",         lat: 57.9297, lng: 12.5321 },
+  { namn: "Polisen Lerum",                      adress: "Brovägen 1, Lerum",                lat: 57.7697, lng: 12.2690 },
+  { namn: "Polisen Mölndal",                    adress: "Torggatan 3, Mölndal",             lat: 57.6566, lng: 12.0136 },
+  // Skaraborg
+  { namn: "Polisen Skövde",                     adress: "Kyrkogatan 11, Skövde",            lat: 58.3901, lng: 13.8456 },
+  { namn: "Polisen Skara",                      adress: "Klostergatan 4, Skara",            lat: 58.3862, lng: 13.4399 },
+  { namn: "Polisen Vara",                       adress: "Norra Torggatan 5, Vara",          lat: 58.2655, lng: 12.9619 },
+  { namn: "Polisen Falköping",                  adress: "Skaraborgsgatan 8, Falköping",     lat: 58.1745, lng: 13.5509 },
+  { namn: "Polisen Tidaholm",                   adress: "Storgatan 24, Tidaholm",           lat: 58.1838, lng: 13.9553 },
+  { namn: "Polisen Töreboda",                   adress: "Kanalgatan 2, Töreboda",           lat: 58.7091, lng: 14.1200 },
+];
+
+// ── Karta ─────────────────────────────────────────────────────────────────────
+
+const map = L.map('map').setView([58.2, 12.5], 8);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  maxZoom: 19
+}).addTo(map);
+
+// ── Ikoner ────────────────────────────────────────────────────────────────────
+
+function makeIcon(color, emoji) {
+  return L.divIcon({
+    className: '',
+    html: `<div style="
+      background:${color};
+      color:#fff;
+      width:32px;height:32px;
+      border-radius:50% 50% 50% 0;
+      transform:rotate(-45deg);
+      border:2px solid rgba(255,255,255,0.8);
+      box-shadow:0 2px 6px rgba(0,0,0,0.35);
+      display:flex;align-items:center;justify-content:center;
+    "><span style="transform:rotate(45deg);font-size:15px;">${emoji}</span></div>`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -34]
+  });
+}
+
+const polisIcon = makeIcon('#1a3a6b', '🚔');
+
+// ── Lager ─────────────────────────────────────────────────────────────────────
+
+const polisLayer = L.layerGroup();
+
+let totalVisible = 0;
+
+function addMarkers(data, layer, icon, typeLabel, typeColor) {
+  data.forEach(p => {
+    const marker = L.marker([p.lat, p.lng], { icon });
+    marker.bindPopup(`
+      <div class="popup-title">${p.namn || p.naam}</div>
+      <div class="popup-type" style="background:${typeColor}">${typeLabel}</div>
+      <div class="popup-address">📍 ${p.adress}</div>
+    `);
+    marker.addTo(layer);
+  });
+}
+
+addMarkers(polisStationer, polisLayer, polisIcon, 'Polisstation', '#1a3a6b');
+polisLayer.addTo(map);
+
+// ── Räkna synliga ─────────────────────────────────────────────────────────────
+
+function updateCount() {
+  let count = 0;
+  if (document.getElementById('cb-polis').checked) count += polisStationer.length;
+  document.getElementById('visible-count').textContent = count;
+}
+
+document.getElementById('cb-polis').addEventListener('change', e => {
+  if (e.target.checked) polisLayer.addTo(map);
+  else map.removeLayer(polisLayer);
+  updateCount();
+});
+
+updateCount();
+</script>
+</body>
+</html>
