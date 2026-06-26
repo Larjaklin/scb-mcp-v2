@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Västra Götaland – Polisstationer</title>
+  <title>Västra Götaland – Samhällsservice</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
@@ -13,72 +13,65 @@
     header {
       background: #1a3a6b;
       color: #fff;
-      padding: 16px 24px;
+      padding: 14px 24px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: space-between;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
-    header h1 { font-size: 1.3rem; font-weight: 600; }
-    header span { font-size: 0.9rem; opacity: 0.75; }
+    header h1 { font-size: 1.25rem; font-weight: 600; }
+    header span { font-size: 0.85rem; opacity: 0.75; }
 
     #controls {
       background: #fff;
       border-bottom: 1px solid #dde3ec;
-      padding: 10px 20px;
+      padding: 8px 20px;
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 20px;
       flex-wrap: wrap;
     }
 
     .legend-item {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 0.88rem;
+      gap: 7px;
+      font-size: 0.875rem;
       cursor: pointer;
       user-select: none;
     }
-    .legend-item input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; }
+    .legend-item input[type=checkbox] { width: 15px; height: 15px; cursor: pointer; }
     .dot {
-      width: 16px; height: 16px;
+      width: 14px; height: 14px;
       border-radius: 50%;
-      border: 2px solid rgba(0,0,0,0.3);
+      border: 2px solid rgba(0,0,0,0.25);
       display: inline-block;
       flex-shrink: 0;
     }
+    .sep { width: 1px; height: 22px; background: #dde3ec; }
 
     #count-bar {
       margin-left: auto;
-      font-size: 0.83rem;
-      color: #555;
+      font-size: 0.82rem;
+      color: #666;
     }
 
-    #map {
-      height: calc(100vh - 110px);
-      width: 100%;
-    }
+    #map { height: calc(100vh - 106px); width: 100%; }
 
-    .leaflet-popup-content-wrapper {
-      border-radius: 8px;
-      font-size: 0.88rem;
-    }
-    .popup-title {
-      font-weight: 700;
-      font-size: 1rem;
-      margin-bottom: 4px;
-    }
-    .popup-type {
+    .leaflet-popup-content-wrapper { border-radius: 8px; font-size: 0.87rem; min-width: 200px; }
+    .popup-title { font-weight: 700; font-size: 0.98rem; margin-bottom: 5px; }
+    .popup-badge {
       display: inline-block;
-      padding: 2px 8px;
+      padding: 2px 9px;
       border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: 600;
+      font-size: 0.72rem;
+      font-weight: 700;
       color: #fff;
-      margin-bottom: 6px;
+      margin-bottom: 7px;
+      letter-spacing: .3px;
     }
-    .popup-address { color: #444; margin-top: 4px; }
+    .popup-address { color: #444; line-height: 1.4; }
+    .popup-org { color: #888; font-size: 0.78rem; margin-top: 5px; }
   </style>
 </head>
 <body>
@@ -86,7 +79,7 @@
 <header>
   <div>
     <h1>Västra Götaland – Samhällsservice</h1>
-    <span>Interaktiv karta · Klicka på en markör för information</span>
+    <span>Interaktiv karta · Klicka på markör för information</span>
   </div>
 </header>
 
@@ -94,61 +87,149 @@
   <label class="legend-item">
     <input type="checkbox" id="cb-polis" checked />
     <span class="dot" style="background:#1a3a6b;"></span>
-    Polisstationer
+    Polisstationer (<span id="n-polis">0</span>)
   </label>
-  <!-- Brandstationer och vårdcentraler läggs till senare -->
-  <span id="count-bar">Visar <strong id="visible-count">0</strong> platser</span>
+  <div class="sep"></div>
+  <label class="legend-item">
+    <input type="checkbox" id="cb-brand" checked />
+    <span class="dot" style="background:#c0392b;"></span>
+    Brandstationer (<span id="n-brand">0</span>)
+  </label>
+  <span id="count-bar">Totalt: <strong id="visible-count">0</strong> platser</span>
 </div>
 
 <div id="map"></div>
 
 <script>
-// ── Data ──────────────────────────────────────────────────────────────────────
+// ── Polisstationer ────────────────────────────────────────────────────────────
 
 const polisStationer = [
   // Göteborg
-  { namn: "Polisen Göteborg City",              adress: "Stampgatan 28, Göteborg",          lat: 57.7083, lng: 11.9746 },
-  { namn: "Polisen Göteborg Passcentralen",     adress: "Stampgatan 34, Göteborg",          lat: 57.7080, lng: 11.9750 },
-  { namn: "Polisen Göteborg Hisingen",          adress: "Vädursgatan 5, Göteborg",          lat: 57.7248, lng: 11.9381 },
-  { namn: "Polisen Göteborg Nordost (Hjällbo)", adress: "Hjällbo Torg 1, Göteborg",         lat: 57.7680, lng: 12.0168 },
-  { namn: "Polisen Göteborg Hittegodscentralen",adress: "Odinsgatan 28B, Göteborg",         lat: 57.7134, lng: 11.9697 },
-  { namn: "Polisen Göteborg Beslaget",          adress: "Exportgatan 43, Hisings Backa",    lat: 57.7260, lng: 11.9510 },
-  // Norra Bohuslän
-  { namn: "Polisen Uddevalla",                  adress: "Lagerbergsgatan 35, Uddevalla",    lat: 58.3490, lng: 11.9380 },
-  { namn: "Polisen Stenungsund",                adress: "Stationsgatan 2, Stenungsund",     lat: 58.0715, lng: 11.8244 },
-  { namn: "Polisen Kungälv",                    adress: "Strandgatan 12, Kungälv",          lat: 57.8705, lng: 11.9745 },
-  { namn: "Polisen Lysekil",                    adress: "Kungsgatan 25, Lysekil",           lat: 58.2757, lng: 11.4358 },
-  { namn: "Polisen Sotenäs (Kungshamn)",        adress: "Hamngatan 6, Kungshamn",           lat: 58.3717, lng: 11.2542 },
-  { namn: "Polisen Tanumshede",                 adress: "Apoteksvägen 3, Tanumshede",       lat: 58.7234, lng: 11.3287 },
-  { namn: "Polisen Strömstad",                  adress: "Norra Bergsgatan 16, Strömstad",   lat: 58.9352, lng: 11.1697 },
+  { namn: "Polisen Göteborg City",               adress: "Stampgatan 28, Göteborg",           lat: 57.7083, lng: 11.9746 },
+  { namn: "Polisen Göteborg Passcentralen",      adress: "Stampgatan 34, Göteborg",           lat: 57.7079, lng: 11.9752 },
+  { namn: "Polisen Göteborg Hisingen",           adress: "Vädursgatan 5, Göteborg",           lat: 57.7248, lng: 11.9381 },
+  { namn: "Polisen Göteborg Nordost (Hjällbo)",  adress: "Hjällbo Torg 1, Göteborg",          lat: 57.7680, lng: 12.0168 },
+  { namn: "Polisen Göteborg Hittegodscentralen", adress: "Odinsgatan 28B, Göteborg",          lat: 57.7134, lng: 11.9697 },
+  { namn: "Polisen Göteborg Beslaget",           adress: "Exportgatan 43, Hisings Backa",     lat: 57.7260, lng: 11.9510 },
+  // Bohuslän
+  { namn: "Polisen Uddevalla",                   adress: "Lagerbergsgatan 35, Uddevalla",     lat: 58.3490, lng: 11.9380 },
+  { namn: "Polisen Stenungsund",                 adress: "Stationsgatan 2, Stenungsund",      lat: 58.0715, lng: 11.8244 },
+  { namn: "Polisen Kungälv",                     adress: "Strandgatan 12, Kungälv",           lat: 57.8705, lng: 11.9745 },
+  { namn: "Polisen Lysekil",                     adress: "Kungsgatan 25, Lysekil",            lat: 58.2757, lng: 11.4358 },
+  { namn: "Polisen Sotenäs (Kungshamn)",         adress: "Hamngatan 6, Kungshamn",            lat: 58.3717, lng: 11.2542 },
+  { namn: "Polisen Tanumshede",                  adress: "Apoteksvägen 3, Tanumshede",        lat: 58.7234, lng: 11.3287 },
+  { namn: "Polisen Strömstad",                   adress: "Norra Bergsgatan 16, Strömstad",    lat: 58.9352, lng: 11.1697 },
   // Dalsland
-  { namn: "Polisen Åmål",                       adress: "Storgatan 8, Åmål",                lat: 59.0451, lng: 12.7034 },
-  { namn: "Polisen Bengtsfors",                 adress: "Järnvägsgatan 2, Bengtsfors",      lat: 59.0342, lng: 12.2275 },
-  { namn: "Polisen Mellerud",                   adress: "Storgatan 14, Mellerud",           lat: 58.7016, lng: 12.4633 },
-  // Västra Götaland norr
-  { namn: "Polisen Trollhättan",                adress: "Klintvägen 2, Trollhättan",        lat: 58.2835, lng: 12.2857 },
-  { namn: "Polisen Vänersborg",                 adress: "Sundsgatan 53, Vänersborg",        lat: 58.3797, lng: 12.3231 },
-  { namn: "Polisen Lidköping",                  adress: "Järnvägsgatan 5, Lidköping",       lat: 58.5059, lng: 13.1591 },
-  { namn: "Polisen Mariestad",                  adress: "Drottninggatan 34, Mariestad",     lat: 58.7098, lng: 13.8274 },
+  { namn: "Polisen Åmål",                        adress: "Storgatan 8, Åmål",                 lat: 59.0451, lng: 12.7034 },
+  { namn: "Polisen Bengtsfors",                  adress: "Järnvägsgatan 2, Bengtsfors",       lat: 59.0342, lng: 12.2275 },
+  { namn: "Polisen Mellerud",                    adress: "Storgatan 14, Mellerud",            lat: 58.7016, lng: 12.4633 },
+  // Väst
+  { namn: "Polisen Trollhättan",                 adress: "Klintvägen 2, Trollhättan",         lat: 58.2835, lng: 12.2857 },
+  { namn: "Polisen Vänersborg",                  adress: "Sundsgatan 53, Vänersborg",         lat: 58.3797, lng: 12.3231 },
+  { namn: "Polisen Lidköping",                   adress: "Järnvägsgatan 5, Lidköping",        lat: 58.5059, lng: 13.1591 },
+  { namn: "Polisen Mariestad",                   adress: "Drottninggatan 34, Mariestad",      lat: 58.7098, lng: 13.8274 },
   // Sjuhärad
-  { namn: "Polisen Borås",                      adress: "Sandgärdsgatan 15, Borås",         lat: 57.7210, lng: 12.9398 },
-  { namn: "Polisen Ulricehamn",                 adress: "Boråsvägen 80, Ulricehamn",        lat: 57.7920, lng: 13.4215 },
-  { naam: "Polisen Herrljunga",                 adress: "Järnvägsgatan 5, Herrljunga",      lat: 58.0742, lng: 13.0239 },
-  { namn: "Polisen Alingsås",                   adress: "Kaptensgatan 1, Alingsås",         lat: 57.9297, lng: 12.5321 },
-  { namn: "Polisen Lerum",                      adress: "Brovägen 1, Lerum",                lat: 57.7697, lng: 12.2690 },
-  { namn: "Polisen Mölndal",                    adress: "Torggatan 3, Mölndal",             lat: 57.6566, lng: 12.0136 },
+  { namn: "Polisen Borås",                       adress: "Sandgärdsgatan 15, Borås",          lat: 57.7210, lng: 12.9398 },
+  { namn: "Polisen Ulricehamn",                  adress: "Boråsvägen 80, Ulricehamn",         lat: 57.7920, lng: 13.4215 },
+  { namn: "Polisen Herrljunga",                  adress: "Järnvägsgatan 5, Herrljunga",       lat: 58.0742, lng: 13.0239 },
+  { namn: "Polisen Alingsås",                    adress: "Kaptensgatan 1, Alingsås",          lat: 57.9297, lng: 12.5321 },
+  { namn: "Polisen Lerum",                       adress: "Brovägen 1, Lerum",                 lat: 57.7697, lng: 12.2690 },
+  { namn: "Polisen Mölndal",                     adress: "Torggatan 3, Mölndal",              lat: 57.6566, lng: 12.0136 },
   // Skaraborg
-  { namn: "Polisen Skövde",                     adress: "Kyrkogatan 11, Skövde",            lat: 58.3901, lng: 13.8456 },
-  { namn: "Polisen Skara",                      adress: "Klostergatan 4, Skara",            lat: 58.3862, lng: 13.4399 },
-  { namn: "Polisen Vara",                       adress: "Norra Torggatan 5, Vara",          lat: 58.2655, lng: 12.9619 },
-  { namn: "Polisen Falköping",                  adress: "Skaraborgsgatan 8, Falköping",     lat: 58.1745, lng: 13.5509 },
-  { namn: "Polisen Tidaholm",                   adress: "Storgatan 24, Tidaholm",           lat: 58.1838, lng: 13.9553 },
-  { namn: "Polisen Töreboda",                   adress: "Kanalgatan 2, Töreboda",           lat: 58.7091, lng: 14.1200 },
+  { namn: "Polisen Skövde",                      adress: "Kyrkogatan 11, Skövde",             lat: 58.3901, lng: 13.8456 },
+  { namn: "Polisen Skara",                       adress: "Klostergatan 4, Skara",             lat: 58.3862, lng: 13.4399 },
+  { namn: "Polisen Vara",                        adress: "Norra Torggatan 5, Vara",           lat: 58.2655, lng: 12.9619 },
+  { namn: "Polisen Falköping",                   adress: "Skaraborgsgatan 8, Falköping",      lat: 58.1745, lng: 13.5509 },
+  { namn: "Polisen Tidaholm",                    adress: "Storgatan 24, Tidaholm",            lat: 58.1838, lng: 13.9553 },
+  { namn: "Polisen Töreboda",                    adress: "Kanalgatan 2, Töreboda",            lat: 58.7091, lng: 14.1200 },
+];
+
+// ── Brandstationer ────────────────────────────────────────────────────────────
+
+const brandStationer = [
+
+  // ── RSG – Räddningstjänsten Storgöteborg ─────────────────────────────────
+  // Heltid
+  { namn: "Gårda brandstation",      adress: "Åvägen 2, Göteborg",                  org: "RSG Storgöteborg", lat: 57.6963, lng: 12.0027 },
+  { namn: "Frölunda brandstation",   adress: "Grimmeredsvägen 150, Göteborg",        org: "RSG Storgöteborg", lat: 57.6499, lng: 11.9138 },
+  { namn: "Lundby brandstation",     adress: "Herkulesgatan 7, Göteborg",            org: "RSG Storgöteborg", lat: 57.7175, lng: 11.9397 },
+  { namn: "Angered brandstation",    adress: "Angeredsvinkeln 1, Göteborg",          org: "RSG Storgöteborg", lat: 57.7827, lng: 12.0551 },
+  { namn: "Kortedala brandstation",  adress: "Tideräkningsgatan 13, Göteborg",       org: "RSG Storgöteborg", lat: 57.7496, lng: 12.0435 },
+  { namn: "Kålltorp brandstation",   adress: "Kålltorpsgatan 6, Göteborg",           org: "RSG Storgöteborg", lat: 57.7133, lng: 12.0312 },
+  // RIB/deltid
+  { namn: "Öckerö brandstation",     adress: "Öckerö",                               org: "RSG Storgöteborg", lat: 57.7086, lng: 11.6553 },
+  { namn: "Kungälv brandstation",    adress: "Larmgatan 1, Kungälv",                 org: "RSG Storgöteborg", lat: 57.8705, lng: 11.9745 },
+  { namn: "Ale brandstation",        adress: "Nödinge",                              org: "RSG Storgöteborg", lat: 57.8548, lng: 12.0574 },
+  { namn: "Lerum brandstation",      adress: "Lerum",                                org: "RSG Storgöteborg", lat: 57.7697, lng: 12.2690 },
+  { namn: "Partille brandstation",   adress: "Partille",                             org: "RSG Storgöteborg", lat: 57.7381, lng: 12.1069 },
+  { namn: "Mölndal brandstation",    adress: "Mölndal",                              org: "RSG Storgöteborg", lat: 57.6566, lng: 12.0136 },
+  { namn: "Härryda brandstation",    adress: "Mölnlycke",                            org: "RSG Storgöteborg", lat: 57.6561, lng: 12.1290 },
+  { namn: "Frillesås brandstation",  adress: "Göteborgsvägen 68, Frillesås",         org: "RSG Storgöteborg", lat: 57.3523, lng: 12.1480 },
+  { namn: "Kungsbacka brandstation", adress: "Syréngatan 3, Kungsbacka",             org: "RSG Storgöteborg", lat: 57.4888, lng: 12.0764 },
+
+  // ── RTJ Fyrbodal ─────────────────────────────────────────────────────────
+  // Heltid
+  { namn: "Trollhättans brandstation", adress: "Larmvägen 1, Trollhättan",           org: "RTJ Fyrbodal", lat: 58.2835, lng: 12.2857 },
+  { namn: "Uddevalla brandstation",    adress: "Larmgatan 4, Uddevalla",             org: "RTJ Fyrbodal", lat: 58.3490, lng: 11.9380 },
+  { namn: "Vänersborgs brandstation",  adress: "Brättevägen 1, Vänersborg",          org: "RTJ Fyrbodal", lat: 58.3797, lng: 12.3231 },
+  // Deltid
+  { namn: "Brastad brandstation",      adress: "Sågvägen 45, Brastad",               org: "RTJ Fyrbodal", lat: 58.3700, lng: 11.4750 },
+  { namn: "Brålanda brandstation",     adress: "Högagatan 11, Brålanda",             org: "RTJ Fyrbodal", lat: 58.5476, lng: 12.3612 },
+  { namn: "Färgelanda brandstation",   adress: "Håvestensvägen 1, Färgelanda",       org: "RTJ Fyrbodal", lat: 58.5686, lng: 11.9875 },
+  { namn: "Hedekas brandstation",      adress: "Färgelandavägen 27, Hedekas",        org: "RTJ Fyrbodal", lat: 58.2857, lng: 11.7143 },
+  { namn: "Högsäter brandstation",     adress: "Skomakarvägen 3, Högsäter",          org: "RTJ Fyrbodal", lat: 58.6557, lng: 12.0720 },
+  { namn: "Lysekil brandstation",      adress: "Valbogatan 5, Lysekil",              org: "RTJ Fyrbodal", lat: 58.2757, lng: 11.4358 },
+  { namn: "Ljungskile brandstation",   adress: "Vällebergsvägen 32, Ljungskile",     org: "RTJ Fyrbodal", lat: 58.2268, lng: 11.7349 },
+  { namn: "Mellerud brandstation",     adress: "Järnvägsgatan 3, Mellerud",          org: "RTJ Fyrbodal", lat: 58.7016, lng: 12.4633 },
+  { namn: "Munkedal brandstation",     adress: "Klockvägen 5, Munkedal",             org: "RTJ Fyrbodal", lat: 58.4759, lng: 11.6717 },
+  { namn: "Sjuntorp brandstation",     adress: "Åvägen 4, Sjuntorp",                 org: "RTJ Fyrbodal", lat: 58.2548, lng: 12.2076 },
+  { namn: "Skaftö brandstation",       adress: "Skaftö",                             org: "RTJ Fyrbodal", lat: 58.2540, lng: 11.4895 },
+  { namn: "Vargön brandstation",       adress: "Vargön",                             org: "RTJ Fyrbodal", lat: 58.3526, lng: 12.3815 },
+  { namn: "Åsensbruk brandstation",    adress: "Fabriksvägen 15, Åsensbruk",         org: "RTJ Fyrbodal", lat: 58.3929, lng: 12.4780 },
+
+  // ── RTJ Skaraborg ────────────────────────────────────────────────────────
+  // Heltid
+  { namn: "Skövde brandstation",     adress: "Majorsgatan 1, Skövde",                org: "RTJ Skaraborg", lat: 58.3901, lng: 13.8456 },
+  { namn: "Lidköping brandstation",  adress: "Tornväktargatan 2, Lidköping",         org: "RTJ Skaraborg", lat: 58.5059, lng: 13.1591 },
+  { namn: "Mariestad brandstation",  adress: "Hamngatan 46, Mariestad",              org: "RTJ Skaraborg", lat: 58.7098, lng: 13.8274 },
+  // Deltid
+  { namn: "Tibro brandstation",      adress: "Tibro",                                org: "RTJ Skaraborg", lat: 58.4230, lng: 14.1644 },
+  { namn: "Hjo brandstation",        adress: "Hjo",                                  org: "RTJ Skaraborg", lat: 58.3024, lng: 14.2896 },
+  { namn: "Skara brandstation",      adress: "Skara",                                org: "RTJ Skaraborg", lat: 58.3862, lng: 13.4399 },
+  { namn: "Falköping brandstation",  adress: "Falköping",                            org: "RTJ Skaraborg", lat: 58.1745, lng: 13.5509 },
+  { namn: "Tidaholm brandstation",   adress: "Tidaholm",                             org: "RTJ Skaraborg", lat: 58.1838, lng: 13.9553 },
+  { namn: "Götene brandstation",     adress: "Götene",                               org: "RTJ Skaraborg", lat: 58.5277, lng: 13.4945 },
+  { namn: "Vara brandstation",       adress: "Vara",                                 org: "RTJ Skaraborg", lat: 58.2655, lng: 12.9619 },
+  { namn: "Grästorp brandstation",   adress: "Grästorp",                             org: "RTJ Skaraborg", lat: 58.3320, lng: 12.6743 },
+  { namn: "Töreboda brandstation",   adress: "Töreboda",                             org: "RTJ Skaraborg", lat: 58.7091, lng: 14.1200 },
+  { namn: "Gullspång brandstation",  adress: "Gullspång",                            org: "RTJ Skaraborg", lat: 58.9795, lng: 14.1094 },
+  { namn: "Karlsborg brandstation",  adress: "Karlsborg",                            org: "RTJ Skaraborg", lat: 58.5320, lng: 14.5071 },
+  { namn: "Essunga brandstation",    adress: "Nossebro",                             org: "RTJ Skaraborg", lat: 58.1895, lng: 12.7188 },
+
+  // ── SERF – Södra Älvsborgs Räddningstjänstförbund ────────────────────────
+  { namn: "Borås brandstation",      adress: "Olovsholmsgatan 12, Borås",            org: "SERF", lat: 57.7210, lng: 12.9398 },
+  { namn: "Skene brandstation",      adress: "Skene (Marks kommun)",                 org: "SERF", lat: 57.5060, lng: 12.6775 },
+  { namn: "Ulricehamn brandstation", adress: "Ulricehamn",                           org: "SERF", lat: 57.7920, lng: 13.4215 },
+  { namn: "Svenljunga brandstation", adress: "Svenljunga",                           org: "SERF", lat: 57.4936, lng: 13.1142 },
+  { namn: "Tranemo brandstation",    adress: "Tranemo",                              org: "SERF", lat: 57.4874, lng: 13.3453 },
+  { namn: "Bollebygd brandstation",  adress: "Bollebygd",                            org: "SERF", lat: 57.6679, lng: 12.5742 },
+  { namn: "Dalsjöfors brandstation", adress: "Dalsjöfors",                           org: "SERF", lat: 57.6885, lng: 13.0786 },
+  { namn: "Viskafors brandstation",  adress: "Viskafors",                            org: "SERF", lat: 57.6534, lng: 12.8575 },
+  { namn: "Fristad brandstation",    adress: "Fristad",                              org: "SERF", lat: 57.8124, lng: 12.8958 },
+  { namn: "Fritsla brandstation",    adress: "Fritsla",                              org: "SERF", lat: 57.5388, lng: 12.7588 },
+  { namn: "Horred brandstation",     adress: "Horred",                               org: "SERF", lat: 57.3710, lng: 12.4697 },
+  { namn: "Limmared brandstation",   adress: "Limmared",                             org: "SERF", lat: 57.5677, lng: 13.3462 },
+  { namn: "Mjöbäck brandstation",    adress: "Mjöbäck",                              org: "SERF", lat: 57.4178, lng: 13.2098 },
+  { namn: "Sätila brandstation",     adress: "Sätila",                               org: "SERF", lat: 57.5059, lng: 12.4764 },
+  { namn: "Torestorp brandstation",  adress: "Torestorp",                            org: "SERF", lat: 57.5783, lng: 12.7025 },
+  { namn: "Trädet brandstation",     adress: "Trädet",                               org: "SERF", lat: 57.6193, lng: 13.2031 },
+  { namn: "Vegby brandstation",      adress: "Vegby",                                org: "SERF", lat: 57.4424, lng: 13.5203 },
+  { namn: "Dalstorp brandstation",   adress: "Dalstorp",                             org: "SERF", lat: 57.6344, lng: 13.2668 },
 ];
 
 // ── Karta ─────────────────────────────────────────────────────────────────────
 
-const map = L.map('map').setView([58.2, 12.5], 8);
+const map = L.map('map').setView([58.1, 12.5], 8);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -163,53 +244,64 @@ function makeIcon(color, emoji) {
     html: `<div style="
       background:${color};
       color:#fff;
-      width:32px;height:32px;
+      width:30px;height:30px;
       border-radius:50% 50% 50% 0;
       transform:rotate(-45deg);
-      border:2px solid rgba(255,255,255,0.8);
+      border:2px solid rgba(255,255,255,0.85);
       box-shadow:0 2px 6px rgba(0,0,0,0.35);
       display:flex;align-items:center;justify-content:center;
-    "><span style="transform:rotate(45deg);font-size:15px;">${emoji}</span></div>`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -34]
+    "><span style="transform:rotate(45deg);font-size:14px;">${emoji}</span></div>`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 30],
+    popupAnchor: [0, -32]
   });
 }
 
 const polisIcon = makeIcon('#1a3a6b', '🚔');
+const brandIcon = makeIcon('#c0392b', '🚒');
 
 // ── Lager ─────────────────────────────────────────────────────────────────────
 
 const polisLayer = L.layerGroup();
-
-let totalVisible = 0;
+const brandLayer = L.layerGroup();
 
 function addMarkers(data, layer, icon, typeLabel, typeColor) {
   data.forEach(p => {
     const marker = L.marker([p.lat, p.lng], { icon });
     marker.bindPopup(`
-      <div class="popup-title">${p.namn || p.naam}</div>
-      <div class="popup-type" style="background:${typeColor}">${typeLabel}</div>
+      <div class="popup-title">${p.namn}</div>
+      <div class="popup-badge" style="background:${typeColor}">${typeLabel}</div>
       <div class="popup-address">📍 ${p.adress}</div>
+      ${p.org ? `<div class="popup-org">📋 ${p.org}</div>` : ''}
     `);
     marker.addTo(layer);
   });
 }
 
 addMarkers(polisStationer, polisLayer, polisIcon, 'Polisstation', '#1a3a6b');
-polisLayer.addTo(map);
+addMarkers(brandStationer, brandLayer, brandIcon, 'Brandstation', '#c0392b');
 
-// ── Räkna synliga ─────────────────────────────────────────────────────────────
+polisLayer.addTo(map);
+brandLayer.addTo(map);
+
+// ── Räkna & uppdatera ─────────────────────────────────────────────────────────
+
+document.getElementById('n-polis').textContent = polisStationer.length;
+document.getElementById('n-brand').textContent = brandStationer.length;
 
 function updateCount() {
   let count = 0;
   if (document.getElementById('cb-polis').checked) count += polisStationer.length;
+  if (document.getElementById('cb-brand').checked) count += brandStationer.length;
   document.getElementById('visible-count').textContent = count;
 }
 
 document.getElementById('cb-polis').addEventListener('change', e => {
-  if (e.target.checked) polisLayer.addTo(map);
-  else map.removeLayer(polisLayer);
+  if (e.target.checked) polisLayer.addTo(map); else map.removeLayer(polisLayer);
+  updateCount();
+});
+document.getElementById('cb-brand').addEventListener('change', e => {
+  if (e.target.checked) brandLayer.addTo(map); else map.removeLayer(brandLayer);
   updateCount();
 });
 
