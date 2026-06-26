@@ -95,6 +95,12 @@
     <span class="dot" style="background:#c0392b;"></span>
     Brandstationer (<span id="n-brand">0</span>)
   </label>
+  <div class="sep"></div>
+  <label class="legend-item">
+    <input type="checkbox" id="cb-vard" checked />
+    <span class="dot" style="background:#27ae60;"></span>
+    Vårdcentraler (<span id="n-vard">0</span>)
+  </label>
   <span id="count-bar">Totalt: <strong id="visible-count">0</strong> platser</span>
 </div>
 
@@ -142,6 +148,84 @@ const polisStationer = [
   { namn: "Polisen Falköping",                   adress: "Skaraborgsgatan 8, Falköping",      lat: 58.1745, lng: 13.5509 },
   { namn: "Polisen Tidaholm",                    adress: "Storgatan 24, Tidaholm",            lat: 58.1838, lng: 13.9553 },
   { namn: "Polisen Töreboda",                    adress: "Kanalgatan 2, Töreboda",            lat: 58.7091, lng: 14.1200 },
+];
+
+// ── Vårdcentraler ────────────────────────────────────────────────────────────
+
+const vardCentraler = [
+  // ── Göteborg – centrala ──────────────────────────────────────────────────
+  { namn: "Capio Vårdcentral Axess",            adress: "Södra Allégatan 6, Göteborg",           org: "Capio",            lat: 57.6983, lng: 11.9715 },
+  { namn: "Capio Vårdcentral Gårda",            adress: "Anders Personsgatan 12, Göteborg",       org: "Capio",            lat: 57.7010, lng: 12.0095 },
+  { namn: "Capio Vårdcentral Kvillebäcken",     adress: "Borstbindaregatan 6, Göteborg",          org: "Capio",            lat: 57.7163, lng: 11.9521 },
+  { namn: "Capio Vårdcentral Lundby",           adress: "Wieselgrensplatsen 19, Göteborg",        org: "Capio",            lat: 57.7175, lng: 11.9250 },
+  { namn: "Nötkärnan Guldheden",                adress: "Doktor Fries torg 6, Göteborg",          org: "Nötkärnan",        lat: 57.6906, lng: 11.9734 },
+  { namn: "Läkarhuset Centrum",                 adress: "Södra vägen 27, Göteborg",               org: "Praktikertjänst",  lat: 57.6985, lng: 11.9820 },
+  { namn: "Distriktsläkarna Kviberg",           adress: "Rustmästaregatan 3, Göteborg",           org: "Privat",           lat: 57.7374, lng: 12.0395 },
+  { namn: "Backaplan Vårdcentral",              adress: "Gamla Tuvevägen 23, Göteborg",           org: "Privat",           lat: 57.7310, lng: 11.9490 },
+  // ── Göteborg – Närhälsan ────────────────────────────────────────────────
+  { namn: "Närhälsan Backa VC",                 adress: "Rimmaregatan 2, Hisings Backa",          org: "Närhälsan",        lat: 57.7406, lng: 11.9574 },
+  { namn: "Närhälsan Bjurslätt VC",             adress: "Bjurslätts torg 3, Göteborg",            org: "Närhälsan",        lat: 57.7274, lng: 11.9210 },
+  { namn: "Närhälsan Brämaregården VC",         adress: "Brämaregårdsvägen 12, Göteborg",         org: "Närhälsan",        lat: 57.7203, lng: 11.9312 },
+  { namn: "Närhälsan Frölunda VC",              adress: "Frölunda torg 1, Göteborg",              org: "Närhälsan",        lat: 57.6519, lng: 11.9217 },
+  { namn: "Närhälsan Gamlestadstorget VC",      adress: "Säveåns Brygga 5, Göteborg",             org: "Närhälsan",        lat: 57.7334, lng: 12.0046 },
+  { namn: "Närhälsan Högsbo VC",                adress: "Axel Dahlströms torg 7, Göteborg",       org: "Närhälsan",        lat: 57.6672, lng: 11.9455 },
+  { namn: "Närhälsan Kärra VC",                 adress: "Lillekärr Södra 51, Hisings Kärra",      org: "Närhälsan",        lat: 57.7602, lng: 11.9750 },
+  { namn: "Närhälsan Kortedala VC",             adress: "Kortedala torg 3, Göteborg",             org: "Närhälsan",        lat: 57.7474, lng: 12.0433 },
+  { namn: "Närhälsan Masthugget VC",            adress: "Stigbergstorget 2, Göteborg",            org: "Närhälsan",        lat: 57.6988, lng: 11.9412 },
+  { namn: "Närhälsan Opaltorget VC",            adress: "Zirkongatan 5, Västra Frölunda",         org: "Närhälsan",        lat: 57.6622, lng: 11.9348 },
+  { namn: "Närhälsan Torpavallen VC",           adress: "Bögatan 2, Göteborg",                    org: "Närhälsan",        lat: 57.6881, lng: 12.0142 },
+  { namn: "Närhälsan Tuve VC",                  adress: "Tuve torg 4, Göteborg",                  org: "Närhälsan",        lat: 57.7418, lng: 11.9098 },
+  { namn: "Närhälsan Angered VC",               adress: "Holmens gata 14, Angered",               org: "Närhälsan",        lat: 57.7828, lng: 12.0552 },
+  { namn: "JohannesVården VC",                  adress: "Trollbärsvägen 16B, Västra Frölunda",    org: "Praktikertjänst",  lat: 57.6526, lng: 11.9138 },
+  // ── Kranskommuner Göteborg ───────────────────────────────────────────────
+  { namn: "Alepraktiken",                       adress: "Klockarevägen 14, Nödinge",              org: "Praktikertjänst",  lat: 57.8548, lng: 12.0574 },
+  { namn: "Närhälsan Lerum VC",                 adress: "Brovägen 5, Lerum",                      org: "Närhälsan",        lat: 57.7697, lng: 12.2690 },
+  { namn: "Närhälsan Partille VC",              adress: "Kyrktorget 1, Partille",                 org: "Närhälsan",        lat: 57.7381, lng: 12.1069 },
+  { namn: "Närhälsan Mölndal VC",               adress: "Åbygatan 1, Mölndal",                   org: "Närhälsan",        lat: 57.6566, lng: 12.0136 },
+  { namn: "Närhälsan Mölnlycke VC",             adress: "Flöjtvägen 1, Mölnlycke",               org: "Närhälsan",        lat: 57.6561, lng: 12.1290 },
+  { namn: "Närhälsan Öckerö VC",                adress: "Sockenvägen 12, Öckerö",                 org: "Närhälsan",        lat: 57.7086, lng: 11.6553 },
+  { namn: "Närhälsan Kungälv VC",               adress: "Östra gatan 9, Kungälv",                 org: "Närhälsan",        lat: 57.8705, lng: 11.9745 },
+  { namn: "Närhälsan Stenungsund VC",           adress: "Göteborgsvägen 3, Stenungsund",          org: "Närhälsan",        lat: 58.0715, lng: 11.8244 },
+  { namn: "Närhälsan Alingsås VC",              adress: "Sörbygatan 7, Alingsås",                 org: "Närhälsan",        lat: 57.9297, lng: 12.5321 },
+  // ── Sjuhärad – Borås ────────────────────────────────────────────────────
+  { namn: "Närhälsan Södra Torget VC",          adress: "Södra Torget 3, Borås",                  org: "Närhälsan",        lat: 57.7202, lng: 12.9405 },
+  { namn: "Närhälsan Sandared VC",              adress: "Strandvägen 11, Sandared",               org: "Närhälsan",        lat: 57.7350, lng: 12.8720 },
+  { namn: "Närhälsan Dalsjöfors VC",            adress: "Uppegårdsgatan 2, Dalsjöfors",           org: "Närhälsan",        lat: 57.6885, lng: 13.0786 },
+  { namn: "Närhälsan Fristad VC",               adress: "Tärnavägen 6, Fristad",                  org: "Närhälsan",        lat: 57.8124, lng: 12.8958 },
+  { namn: "Närhälsan Skene VC",                 adress: "Centrumgatan 4, Skene",                  org: "Närhälsan",        lat: 57.5060, lng: 12.6775 },
+  { namn: "Närhälsan Ulricehamn VC",            adress: "Storgatan 23, Ulricehamn",               org: "Närhälsan",        lat: 57.7920, lng: 13.4215 },
+  { namn: "Närhälsan Svenljunga VC",            adress: "Svenljunga centrum",                     org: "Närhälsan",        lat: 57.4936, lng: 13.1142 },
+  { namn: "Närhälsan Tranemo VC",               adress: "Storgatan 11, Tranemo",                  org: "Närhälsan",        lat: 57.4874, lng: 13.3453 },
+  { namn: "Närhälsan Herrljunga VC",            adress: "Järnvägsgatan 1, Herrljunga",            org: "Närhälsan",        lat: 58.0742, lng: 13.0239 },
+  // ── Fyrbodal / Norra Bohuslän ────────────────────────────────────────────
+  { namn: "Närhälsan Källstorp VC (Trollhättan)",adress: "Strömsviksvägen 16, Trollhättan",       org: "Närhälsan",        lat: 58.2648, lng: 12.3021 },
+  { namn: "Närhälsan Lextorp VC (Trollhättan)", adress: "Lextorpsvägen 4, Trollhättan",           org: "Närhälsan",        lat: 58.2985, lng: 12.2750 },
+  { namn: "Närhälsan Vänersborg VC",            adress: "Torggatan 12, Vänersborg",               org: "Närhälsan",        lat: 58.3797, lng: 12.3231 },
+  { namn: "Närhälsan Uddevalla VC",             adress: "Tunbäcksvägen 14, Uddevalla",            org: "Närhälsan",        lat: 58.3449, lng: 11.9312 },
+  { namn: "Närhälsan Lysekil VC",               adress: "Borgmästarevägen 4, Lysekil",            org: "Närhälsan",        lat: 58.2757, lng: 11.4358 },
+  { namn: "Närhälsan Munkedal VC",              adress: "Centrumgatan 3, Munkedal",               org: "Närhälsan",        lat: 58.4759, lng: 11.6717 },
+  { namn: "Närhälsan Strömstad VC",             adress: "Ångbåtskajen 8, Strömstad",              org: "Närhälsan",        lat: 58.9352, lng: 11.1697 },
+  { namn: "Närhälsan Färgelanda VC",            adress: "Hovslagaregatan 3, Färgelanda",          org: "Närhälsan",        lat: 58.5686, lng: 11.9875 },
+  // ── Dalsland ─────────────────────────────────────────────────────────────
+  { namn: "Närhälsan Åmål VC",                  adress: "Gamla torget 3, Åmål",                   org: "Närhälsan",        lat: 59.0451, lng: 12.7034 },
+  { namn: "Närhälsan Bengtsfors VC",            adress: "Storgatan 6, Bengtsfors",                org: "Närhälsan",        lat: 59.0342, lng: 12.2275 },
+  { namn: "Närhälsan Mellerud VC",              adress: "Storgatan 48, Mellerud",                 org: "Närhälsan",        lat: 58.7016, lng: 12.4633 },
+  // ── Skaraborg ────────────────────────────────────────────────────────────
+  { namn: "Närhälsan Skövde Centrum VC",        adress: "Trädgårdsvägen 10, Skövde",              org: "Närhälsan",        lat: 58.3868, lng: 13.8424 },
+  { namn: "Närhälsan Södra Ryd VC (Skövde)",   adress: "Rydsgatan 5, Skövde",                    org: "Närhälsan",        lat: 58.3713, lng: 13.8554 },
+  { namn: "Närhälsan Mariestad VC",             adress: "Lockerudsvägen 12, Mariestad",           org: "Närhälsan",        lat: 58.7098, lng: 13.8274 },
+  { namn: "Närhälsan Lidköping VC",             adress: "Skomakargatan 4, Lidköping",             org: "Närhälsan",        lat: 58.5059, lng: 13.1591 },
+  { namn: "Närhälsan Falköping VC",             adress: "Dotorsgatan 8, Falköping",               org: "Närhälsan",        lat: 58.1745, lng: 13.5509 },
+  { namn: "Närhälsan Tidaholm VC",              adress: "Storgatan 26, Tidaholm",                 org: "Närhälsan",        lat: 58.1838, lng: 13.9553 },
+  { namn: "Närhälsan Vara VC",                  adress: "Centrumvägen 5, Vara",                   org: "Närhälsan",        lat: 58.2655, lng: 12.9619 },
+  { namn: "Närhälsan Skara VC",                 adress: "Skaraborgsgatan 2, Skara",               org: "Närhälsan",        lat: 58.3862, lng: 13.4399 },
+  { namn: "Närhälsan Tibro VC",                 adress: "Centrumgatan 12, Tibro",                 org: "Närhälsan",        lat: 58.4230, lng: 14.1644 },
+  { namn: "Närhälsan Hjo VC",                   adress: "Bangatan 2, Hjo",                        org: "Närhälsan",        lat: 58.3024, lng: 14.2896 },
+  { namn: "Närhälsan Töreboda VC",              adress: "Storgatan 9, Töreboda",                  org: "Närhälsan",        lat: 58.7091, lng: 14.1200 },
+  { namn: "Närhälsan Götene VC",                adress: "Centrumvägen 12, Götene",                org: "Närhälsan",        lat: 58.5277, lng: 13.4945 },
+  { namn: "Närhälsan Gullspång VC",             adress: "Kanalgatan 3, Gullspång",                org: "Närhälsan",        lat: 58.9795, lng: 14.1094 },
+  { namn: "Närhälsan Karlsborg VC",             adress: "Storgatan 18, Karlsborg",                org: "Närhälsan",        lat: 58.5320, lng: 14.5071 },
+  { namn: "Närhälsan Grästorp VC",              adress: "Norra torget 2, Grästorp",               org: "Närhälsan",        lat: 58.3320, lng: 12.6743 },
 ];
 
 // ── Brandstationer ────────────────────────────────────────────────────────────
@@ -259,11 +343,13 @@ function makeIcon(color, emoji) {
 
 const polisIcon = makeIcon('#1a3a6b', '🚔');
 const brandIcon = makeIcon('#c0392b', '🚒');
+const vardIcon  = makeIcon('#27ae60', '🏥');
 
 // ── Lager ─────────────────────────────────────────────────────────────────────
 
 const polisLayer = L.layerGroup();
 const brandLayer = L.layerGroup();
+const vardLayer  = L.layerGroup();
 
 function addMarkers(data, layer, icon, typeLabel, typeColor) {
   data.forEach(p => {
@@ -278,21 +364,25 @@ function addMarkers(data, layer, icon, typeLabel, typeColor) {
   });
 }
 
-addMarkers(polisStationer, polisLayer, polisIcon, 'Polisstation', '#1a3a6b');
-addMarkers(brandStationer, brandLayer, brandIcon, 'Brandstation', '#c0392b');
+addMarkers(polisStationer, polisLayer, polisIcon, 'Polisstation',  '#1a3a6b');
+addMarkers(brandStationer, brandLayer, brandIcon, 'Brandstation',  '#c0392b');
+addMarkers(vardCentraler,  vardLayer,  vardIcon,  'Vårdcentral',   '#27ae60');
 
 polisLayer.addTo(map);
 brandLayer.addTo(map);
+vardLayer.addTo(map);
 
 // ── Räkna & uppdatera ─────────────────────────────────────────────────────────
 
 document.getElementById('n-polis').textContent = polisStationer.length;
 document.getElementById('n-brand').textContent = brandStationer.length;
+document.getElementById('n-vard').textContent  = vardCentraler.length;
 
 function updateCount() {
   let count = 0;
   if (document.getElementById('cb-polis').checked) count += polisStationer.length;
   if (document.getElementById('cb-brand').checked) count += brandStationer.length;
+  if (document.getElementById('cb-vard').checked)  count += vardCentraler.length;
   document.getElementById('visible-count').textContent = count;
 }
 
@@ -302,6 +392,10 @@ document.getElementById('cb-polis').addEventListener('change', e => {
 });
 document.getElementById('cb-brand').addEventListener('change', e => {
   if (e.target.checked) brandLayer.addTo(map); else map.removeLayer(brandLayer);
+  updateCount();
+});
+document.getElementById('cb-vard').addEventListener('change', e => {
+  if (e.target.checked) vardLayer.addTo(map); else map.removeLayer(vardLayer);
   updateCount();
 });
 
