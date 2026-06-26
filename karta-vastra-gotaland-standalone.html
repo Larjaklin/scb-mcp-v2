@@ -1021,9 +1021,42 @@ const polisLayer = L.layerGroup();
 const brandLayer = L.layerGroup();
 const vardLayer  = L.layerGroup();
 
+// Spread overlapping markers in a small circle so they don't hide each other
+(function spreadOverlaps() {
+  const THRESH = 0.008;
+  const RADIUS = 0.012;
+
+  const all = [
+    ...polisStationer.map(p => ({ p, ds: 'polis' })),
+    ...brandStationer.map(p => ({ p, ds: 'brand' })),
+    ...vardCentraler .map(p => ({ p, ds: 'vard'  })),
+  ];
+
+  const visited = new Set();
+
+  all.forEach((item, i) => {
+    if (visited.has(i)) return;
+    const cluster = [i];
+    all.forEach((other, j) => {
+      if (j === i || visited.has(j)) return;
+      const dlat = item.p.lat - other.p.lat;
+      const dlng = item.p.lng - other.p.lng;
+      if (Math.sqrt(dlat*dlat + dlng*dlng) < THRESH) cluster.push(j);
+    });
+    if (cluster.length > 1) {
+      const step = (2 * Math.PI) / cluster.length;
+      cluster.forEach((idx, k) => {
+        all[idx].p._lat = all[idx].p.lat + RADIUS * Math.cos(k * step);
+        all[idx].p._lng = all[idx].p.lng + RADIUS * Math.sin(k * step) / Math.cos(all[idx].p.lat * Math.PI / 180);
+        visited.add(idx);
+      });
+    }
+  });
+})();
+
 function addMarkers(data, layer, icon, typeLabel, typeColor) {
   data.forEach(p => {
-    const marker = L.marker([p.lat, p.lng], { icon });
+    const marker = L.marker([p._lat ?? p.lat, p._lng ?? p.lng], { icon });
     marker.bindPopup(`
       <div class="popup-title">${p.namn}</div>
       <div class="popup-badge" style="background:${typeColor}">${typeLabel}</div>
