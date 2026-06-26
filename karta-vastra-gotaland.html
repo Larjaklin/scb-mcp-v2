@@ -823,8 +823,7 @@ document.getElementById('cb-brand').addEventListener('change', e => {
   updateCount();
 });
 document.getElementById('cb-vard').addEventListener('change', e => {
-  if (e.target.checked) vardLayer.addTo(map);
-gymnLayer.addTo(map); else map.removeLayer(vardLayer);
+  if (e.target.checked) vardLayer.addTo(map); else map.removeLayer(vardLayer);
   updateCount();
 });
 
