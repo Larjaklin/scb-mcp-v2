@@ -101,6 +101,12 @@
     <span class="dot" style="background:#27ae60;"></span>
     Vårdcentraler (<span id="n-vard">0</span>)
   </label>
+  <div class="sep"></div>
+  <label class="legend-item">
+    <input type="checkbox" id="cb-gymn" checked />
+    <span class="dot" style="background:#8e44ad;"></span>
+    Gymnasieskolor (<span id="n-gymn">0</span>)
+  </label>
   <span id="count-bar">Totalt: <strong id="visible-count">0</strong> platser</span>
 </div>
 
@@ -554,6 +560,141 @@ const brandStationer = [
   { namn: "Vaggeryd-gräns brandstation", adress: "", org: "SERF", lat: 57.17533, lng: 14.59323 },
 ];
 
+
+// ── Gymnasieskolor ───────────────────────────────────────────────────────────────
+
+const gymnasieSkolor = [
+  { namn: "Angeredsgymnasiet", adress: "Angereds Torg 9, Göteborg", org: "Göteborgs Stad", lat: 57.7717, lng: 12.0453 },
+  { namn: "Arbetarnas bildningsförbund (ABF)", adress: "Göteborg", org: "Privat", lat: 57.7089, lng: 11.9746 },
+  { namn: "Burgårdens utbildningscentrum", adress: "Skånegatan 20, Göteborg", org: "Göteborgs Stad", lat: 57.6998, lng: 11.9711 },
+  { namn: "Drottning Blankas Gymnasieskola Göteborg", adress: "Kaserntorget 7, Göteborg", org: "Academedia", lat: 57.7058, lng: 11.9711 },
+  { namn: "Elof Lindälvs gymnasium", adress: "Göteborg", org: "Privat", lat: 57.71, lng: 12.04 },
+  { namn: "Engelska skolan Göteborg", adress: "Göteborg", org: "Engelska skolan", lat: 57.7024, lng: 11.9667 },
+  { namn: "Framtidsgymnasiet Göteborg", adress: "Göteborg", org: "Privat", lat: 57.705, lng: 11.96 },
+  { namn: "Franska skolan gymnasium", adress: "Göteborg", org: "Privat", lat: 57.7, lng: 11.965 },
+  { namn: "Göteborgs tekniska college", adress: "Göteborg", org: "Privat", lat: 57.71, lng: 11.975 },
+  { namn: "Gymnasiesärskolan Hisingen", adress: "Göteborg", org: "Göteborgs Stad", lat: 57.73, lng: 11.935 },
+  { namn: "Hjällboskolans gymnasium", adress: "Göteborg", org: "Göteborgs Stad", lat: 57.76, lng: 11.985 },
+  { namn: "IT-gymnasiet Göteborg", adress: "Göteborg", org: "IT-gymnasiet Sverige", lat: 57.707, lng: 11.968 },
+  { namn: "Johannebergsgymnasiet", adress: "Göteborg", org: "Göteborgs Stad", lat: 57.687, lng: 11.983 },
+  { namn: "John Bauers Gymnasium Göteborg", adress: "Göteborg", org: "Academedia", lat: 57.709, lng: 11.972 },
+  { namn: "Katrinelundsgymnasiet", adress: "Göteborg", org: "Göteborgs Stad", lat: 57.716, lng: 11.954 },
+  { namn: "Kyrkans gymnasium Göteborg", adress: "Göteborg", org: "Privat", lat: 57.704, lng: 11.966 },
+  { namn: "Lindholmens tekniska gymnasium", adress: "Göteborg", org: "Göteborgs Stad", lat: 57.7069, lng: 11.9374 },
+  { namn: "Mikael Elias Gymnasium Göteborg", adress: "Göteborg", org: "Academedia", lat: 57.7055, lng: 11.969 },
+  { namn: "Montessorigymnasiet Väst", adress: "Göteborg", org: "Privat", lat: 57.702, lng: 11.964 },
+  { namn: "Munkebäcksgymnasiet", adress: "Göteborg", org: "Göteborgs Stad", lat: 57.715, lng: 12.02 },
+  { namn: "NTI-gymnasiet Göteborg", adress: "Göteborg", org: "NTI-skolan", lat: 57.706, lng: 11.97 },
+  { namn: "Plusgymnasiet Göteborg", adress: "Göteborg", org: "Academedia", lat: 57.708, lng: 11.973 },
+  { namn: "Påvelundsgymansiet", adress: "Göteborg", org: "Göteborgs Stad", lat: 57.694, lng: 11.953 },
+  { namn: "Rudbecksskolan Göteborg", adress: "Göteborg", org: "Privat", lat: 57.72, lng: 12.01 },
+  { namn: "S:t Eriks gymnasium", adress: "Göteborg", org: "Privat", lat: 57.703, lng: 11.965 },
+  { namn: "Schillerska gymnasiet", adress: "Göteborg", org: "Göteborgs Stad", lat: 57.701, lng: 11.962 },
+  { namn: "Sjölins Gymnasium Göteborg", adress: "Göteborg", org: "Privat", lat: 57.7045, lng: 11.967 },
+  { namn: "Stenungsunds gymnasium", adress: "Göteborg", org: "Privat", lat: 57.708, lng: 11.971 },
+  { namn: "Thoren Business School Göteborg", adress: "Göteborg", org: "Thorén Gruppen", lat: 57.7065, lng: 11.9695 },
+  { namn: "Thorildsplans gymnasium", adress: "Göteborg", org: "Göteborgs Stad", lat: 57.709, lng: 11.976 },
+  { namn: "Tingsholmsgymnasiet", adress: "Göteborg", org: "Göteborgs Stad", lat: 57.7155, lng: 11.962 },
+  { namn: "Ullevigymnasiet", adress: "Göteborg", org: "Göteborgs Stad", lat: 57.708, lng: 11.982 },
+  { namn: "Vittra gymnasium Göteborg", adress: "Göteborg", org: "Vittra", lat: 57.7035, lng: 11.966 },
+  { namn: "Vuxenutbildningen Göteborg (gymnasium)", adress: "Göteborg", org: "Göteborgs Stad", lat: 57.706, lng: 11.968 },
+  { namn: "Åby gymnasium", adress: "Göteborg", org: "Göteborgs Stad", lat: 57.682, lng: 12.027 },
+  { namn: "Önnereds gymnasium", adress: "Göteborg", org: "Göteborgs Stad", lat: 57.666, lng: 11.917 },
+  { namn: "Fässbergsgymnasiet", adress: "Fässbergsgatan, Mölndal", org: "Mölndals Stad", lat: 57.657, lng: 12.014 },
+  { namn: "Kungsbacka gymnasieskola (Mölndal)", adress: "Mölndal", org: "Privat", lat: 57.656, lng: 12.012 },
+  { namn: "Thoren Business School Mölndal", adress: "Mölndal", org: "Thorén Gruppen", lat: 57.6555, lng: 12.0105 },
+  { namn: "Partille gymnasium", adress: "Partille", org: "Partille Kommun", lat: 57.739, lng: 12.106 },
+  { namn: "Hulebäcksgymnasiet", adress: "Landvetter, Härryda", org: "Härryda Kommun", lat: 57.68, lng: 12.2 },
+  { namn: "Lerums gymnasium", adress: "Lerum", org: "Lerums Kommun", lat: 57.773, lng: 12.269 },
+  { namn: "Alströmergymnasiet", adress: "Kungsgatan 4, Alingsås", org: "Alingsås Kommun", lat: 57.929, lng: 12.533 },
+  { namn: "Drottning Blankas Gymnasieskola Alingsås", adress: "Alingsås", org: "Academedia", lat: 57.93, lng: 12.535 },
+  { namn: "Bortbyns naturbruksgymnasium", adress: "Borås", org: "Västra Götalandsregionen", lat: 57.71, lng: 12.91 },
+  { namn: "Carlssons skola Borås", adress: "Borås", org: "Privat", lat: 57.723, lng: 12.938 },
+  { namn: "Drottning Blankas Gymnasieskola Borås", adress: "Borås", org: "Academedia", lat: 57.722, lng: 12.936 },
+  { namn: "Fristadsgymnasiet", adress: "Borås", org: "Borås Stad", lat: 57.721, lng: 12.937 },
+  { namn: "Göteborgs tekniska college Borås", adress: "Borås", org: "Privat", lat: 57.72, lng: 12.934 },
+  { namn: "Internationella gymnasiet Borås", adress: "Borås", org: "Privat", lat: 57.7225, lng: 12.9355 },
+  { namn: "IT-gymnasiet Borås", adress: "Borås", org: "IT-gymnasiet Sverige", lat: 57.7215, lng: 12.9345 },
+  { namn: "Mikael Elias Gymnasium Borås", adress: "Borås", org: "Academedia", lat: 57.7218, lng: 12.9348 },
+  { namn: "Montessorigymnasiet Borås", adress: "Borås", org: "Privat", lat: 57.7208, lng: 12.9338 },
+  { namn: "NTI-gymnasiet Borås", adress: "Borås", org: "NTI-skolan", lat: 57.7212, lng: 12.9342 },
+  { namn: "Plusgymnasiet Borås", adress: "Borås", org: "Academedia", lat: 57.7222, lng: 12.9352 },
+  { namn: "Sjuhäradsgymnasiet", adress: "Borås", org: "Borås Stad", lat: 57.719, lng: 12.941 },
+  { namn: "Svenska stads gymnasium", adress: "Borås", org: "Privat", lat: 57.723, lng: 12.937 },
+  { namn: "Viskadalens folkhögskola (gymnasium)", adress: "Borås", org: "Privat", lat: 57.72, lng: 12.933 },
+  { namn: "Vuxengymnasiet Borås", adress: "Borås", org: "Borås Stad", lat: 57.7215, lng: 12.9365 },
+  { namn: "Drottning Blankas Gymnasieskola Trollhättan", adress: "Trollhättan", org: "Academedia", lat: 58.287, lng: 12.288 },
+  { namn: "Innovitagymnasiet Trollhättan", adress: "Trollhättan", org: "Privat", lat: 58.285, lng: 12.286 },
+  { namn: "Kunskapsgymnasiet Trollhättan", adress: "Trollhättan", org: "Kunskapsgymnasiet", lat: 58.288, lng: 12.289 },
+  { namn: "Nösnäsgymnasiet", adress: "Västra Frölunda-gatan, Stenungsund", org: "Stenungsunds Kommun", lat: 58.07, lng: 11.818 },
+  { namn: "Platinagymnasiet", adress: "Trollhättan", org: "Privat", lat: 58.286, lng: 12.287 },
+  { namn: "Sven Eriksonsgymnasiet", adress: "Trollhättan", org: "Trollhättans Stad", lat: 58.283, lng: 12.284 },
+  { namn: "Vänergymnasiet", adress: "Vänersborg", org: "Vänersborgkommun", lat: 58.378, lng: 12.323 },
+  { namn: "Drottning Blankas Gymnasieskola Uddevalla", adress: "Uddevalla", org: "Academedia", lat: 58.353, lng: 11.935 },
+  { namn: "Kunskapsgymnasiet Uddevalla", adress: "Uddevalla", org: "Kunskapsgymnasiet", lat: 58.354, lng: 11.936 },
+  { namn: "Uddevalla gymnasium", adress: "Uddevalla", org: "Uddevalla Kommun", lat: 58.349, lng: 11.938 },
+  { namn: "Uddevalla tekniska gymnasium", adress: "Uddevalla", org: "Uddevalla Kommun", lat: 58.351, lng: 11.937 },
+  { namn: "Bildbyrån gymnasium", adress: "Skövde", org: "Privat", lat: 58.39, lng: 13.845 },
+  { namn: "Drottning Blankas Gymnasieskola Skövde", adress: "Skövde", org: "Academedia", lat: 58.391, lng: 13.846 },
+  { namn: "Karlskrona gymnasium Skövde", adress: "Skövde", org: "Privat", lat: 58.392, lng: 13.847 },
+  { namn: "Kavelbrogymnasiet", adress: "Skövde", org: "Skövde Kommun", lat: 58.388, lng: 13.844 },
+  { namn: "Thoren Innovation School Skövde", adress: "Skövde", org: "Thorén Gruppen", lat: 58.389, lng: 13.843 },
+  { namn: "Västerhöjd gymnasium", adress: "Skövde", org: "Skövde Kommun", lat: 58.387, lng: 13.842 },
+  { namn: "Frälsningsgatan gymnasium Lidköping", adress: "Lidköping", org: "Privat", lat: 58.503, lng: 13.157 },
+  { namn: "Lidköpingsgymnasiet", adress: "Lidköping", org: "Lidköpings Kommun", lat: 58.504, lng: 13.156 },
+  { namn: "Spikens friskola (gymnasium)", adress: "Lidköping", org: "Privat", lat: 58.505, lng: 13.158 },
+  { namn: "Mariestadsgymnasiet", adress: "Mariestad", org: "Mariestads Kommun", lat: 58.709, lng: 13.825 },
+  { namn: "Falköpingsgymnasiet", adress: "Falköping", org: "Falköpings Kommun", lat: 58.174, lng: 13.549 },
+  { namn: "Alléskolan gymnasium Falköping", adress: "Falköping", org: "Privat", lat: 58.175, lng: 13.55 },
+  { namn: "Burgårdens utb Kungälv", adress: "Kungälv", org: "Privat", lat: 57.87, lng: 11.982 },
+  { namn: "Kongahälla gymnasium", adress: "Kungälv", org: "Kungälvs Kommun", lat: 57.871, lng: 11.983 },
+  { namn: "Ale gymnasium", adress: "Nödinge, Ale", org: "Ale Kommun", lat: 57.883, lng: 12.056 },
+  { namn: "Stenungsundsgymnasiet", adress: "Stenungsund", org: "Stenungsunds Kommun", lat: 58.072, lng: 11.82 },
+  { namn: "Tjörns gymnasium", adress: "Skärhamn, Tjörn", org: "Tjörns Kommun", lat: 57.987, lng: 11.554 },
+  { namn: "Orust gymnasium", adress: "Henån, Orust", org: "Orusts Kommun", lat: 58.048, lng: 11.682 },
+  { namn: "Strömstadsgymnasiet", adress: "Strömstad", org: "Strömstads Kommun", lat: 58.937, lng: 11.166 },
+  { namn: "Lysekilsgymnasiet", adress: "Lysekil", org: "Lysekils Kommun", lat: 58.274, lng: 11.436 },
+  { namn: "Sotenässkolans gymnasium", adress: "Kungshamn, Sotenäs", org: "Sotenäs Kommun", lat: 58.368, lng: 11.25 },
+  { namn: "Munkedals gymnasium", adress: "Munkedal", org: "Munkedals Kommun", lat: 58.471, lng: 11.67 },
+  { namn: "Tanums gymnasium", adress: "Tanumshede, Tanum", org: "Tanums Kommun", lat: 58.725, lng: 11.328 },
+  { namn: "Färgelanda gymnasium", adress: "Färgelanda", org: "Färgelanda Kommun", lat: 58.564, lng: 12.01 },
+  { namn: "Dals-Eds gymnasium", adress: "Ed, Dals-Ed", org: "Dals-Eds Kommun", lat: 58.907, lng: 11.924 },
+  { namn: "Melleruds gymnasium", adress: "Mellerud", org: "Melleruds Kommun", lat: 58.701, lng: 12.46 },
+  { namn: "Åmålsgymnasiet", adress: "Åmål", org: "Åmåls Kommun", lat: 59.048, lng: 12.705 },
+  { namn: "Bengtsforsskolan gymnasium", adress: "Bengtsfors", org: "Bengtsfors Kommun", lat: 59.036, lng: 12.221 },
+  { namn: "Vara gymnasium", adress: "Vara", org: "Vara Kommun", lat: 58.265, lng: 12.956 },
+  { namn: "Grästorps gymnasium", adress: "Grästorp", org: "Grästorps Kommun", lat: 58.327, lng: 12.666 },
+  { namn: "Götene gymnasium", adress: "Götene", org: "Götene Kommun", lat: 58.533, lng: 13.484 },
+  { namn: "Katedralskolan Skara", adress: "Skara", org: "Skara Kommun", lat: 58.389, lng: 13.438 },
+  { namn: "Västra Götalands naturbruksgymnasium Skara", adress: "Skara", org: "VGR", lat: 58.39, lng: 13.435 },
+  { namn: "Tidaholmsgymnasiet", adress: "Tidaholm", org: "Tidaholms Kommun", lat: 58.18, lng: 13.949 },
+  { namn: "Hjo gymnasium", adress: "Hjo", org: "Hjo Kommun", lat: 58.304, lng: 14.296 },
+  { namn: "Tibro gymnasium", adress: "Tibro", org: "Tibro Kommun", lat: 58.422, lng: 14.162 },
+  { namn: "Töreboda gymnasium", adress: "Töreboda", org: "Töreboda Kommun", lat: 58.703, lng: 14.126 },
+  { namn: "Gullspångs gymnasium", adress: "Gullspång", org: "Gullspångs Kommun", lat: 58.98, lng: 14.079 },
+  { namn: "Drottning Blankas Gymnasieskola Mark", adress: "Kinna, Mark", org: "Academedia", lat: 57.505, lng: 12.692 },
+  { namn: "Friskolan Mark gymnasium", adress: "Kinna, Mark", org: "Privat", lat: 57.504, lng: 12.691 },
+  { namn: "Gymnasiet i Mark", adress: "Kinna, Mark", org: "Marks Kommun", lat: 57.506, lng: 12.693 },
+  { namn: "Svenljunga gymnasium", adress: "Svenljunga", org: "Svenljunga Kommun", lat: 57.494, lng: 13.112 },
+  { namn: "Tranemo gymnasium", adress: "Tranemo", org: "Tranemo Kommun", lat: 57.476, lng: 13.341 },
+  { namn: "Tingsholmsgymnasiet Ulricehamn", adress: "Ulricehamn", org: "Ulricehamns Kommun", lat: 57.79, lng: 13.423 },
+  { namn: "Herrljunga gymnasium", adress: "Herrljunga", org: "Herrljunga Kommun", lat: 58.074, lng: 13.025 },
+  { namn: "Lyregymnasiet", adress: "Vårgårda", org: "Vårgårda Kommun", lat: 58.032, lng: 12.809 },
+  { namn: "Bollebygds gymnasium", adress: "Bollebygd", org: "Bollebygds Kommun", lat: 57.663, lng: 12.574 },
+  { namn: "Essunga gymnasium", adress: "Nossebro, Essunga", org: "Essunga Kommun", lat: 58.188, lng: 13.062 },
+  { namn: "Hökensåsgymnasiet", adress: "Tidaholm", org: "Privat", lat: 58.181, lng: 13.948 },
+  { namn: "Samhällsvetenskapliga gymnasiet", adress: "Göteborg", org: "Göteborgs Stad", lat: 57.713, lng: 11.969 },
+  { namn: "Elof Lindälvs gymnasium Göteborg", adress: "Göteborg", org: "Göteborgs Stad", lat: 57.711, lng: 11.971 },
+  { namn: "Donnergymnasiet", adress: "Göteborg", org: "Privat", lat: 57.7025, lng: 11.963 },
+  { namn: "Aranäsgymnasiet", adress: "Kungsbacka", org: "Kungsbacka Kommun", lat: 57.49, lng: 12.075 },
+  { namn: "Thorildsplans gymnasium (fristående)", adress: "Göteborg", org: "Privat", lat: 57.7085, lng: 11.9765 },
+  { namn: "Kunskapsgymnasiet Göteborg", adress: "Göteborg", org: "Kunskapsgymnasiet", lat: 57.7055, lng: 11.9698 },
+  { namn: "Realgymnasiet Göteborg", adress: "Göteborg", org: "Realgymnasiet", lat: 57.7048, lng: 11.9688 },
+  { namn: "Läroverket Göteborg", adress: "Göteborg", org: "Privat", lat: 57.7038, lng: 11.9678 },
+  { namn: "Göteborgs högre samskola", adress: "Göteborg", org: "Privat", lat: 57.7022, lng: 11.9658 },
+  { namn: "Studio Gym Göteborg", adress: "Göteborg", org: "Privat", lat: 57.7032, lng: 11.9668 },
+];
+
 // ── Karta ─────────────────────────────────────────────────────────────────────
 
 const map = L.map('map').setView([58.1, 12.5], 8);
@@ -593,6 +734,7 @@ const vardIcon  = makeIcon('#27ae60', '🏥');
 const polisLayer = L.layerGroup();
 const brandLayer = L.layerGroup();
 const vardLayer  = L.layerGroup();
+const gymnLayer  = L.layerGroup();
 
 // Spread overlapping markers in a small circle so they don't hide each other
 (function spreadOverlaps() {
@@ -603,6 +745,7 @@ const vardLayer  = L.layerGroup();
     ...polisStationer.map(p => ({ p, ds: 'polis' })),
     ...brandStationer.map(p => ({ p, ds: 'brand' })),
     ...vardCentraler .map(p => ({ p, ds: 'vard'  })),
+    ...gymnasieSkolor .map(p => ({ p, ds: 'gymn'  })),
   ];
 
   const visited = new Set();
@@ -616,6 +759,11 @@ const vardLayer  = L.layerGroup();
       const dlng = item.p.lng - other.p.lng;
       if (Math.sqrt(dlat*dlat + dlng*dlng) < THRESH) cluster.push(j);
     });
+const gymnIcon = L.divIcon({
+  className: '',
+  html: '<div style="width:14px;height:14px;border-radius:3px;background:#8e44ad;border:2px solid #5b2c6f;"></div>',
+  iconSize: [14,14], iconAnchor: [7,7], popupAnchor: [0,-8]
+});
     if (cluster.length > 1) {
       const step = (2 * Math.PI) / cluster.length;
       cluster.forEach((idx, k) => {
@@ -643,22 +791,26 @@ function addMarkers(data, layer, icon, typeLabel, typeColor) {
 addMarkers(polisStationer, polisLayer, polisIcon, 'Polisstation',  '#1a3a6b');
 addMarkers(brandStationer, brandLayer, brandIcon, 'Brandstation',  '#c0392b');
 addMarkers(vardCentraler,  vardLayer,  vardIcon,  'Vårdcentral',   '#27ae60');
+addMarkers(gymnasieSkolor,  gymnLayer,  gymnIcon,  'Gymnasieskola', '#8e44ad');
 
 polisLayer.addTo(map);
 brandLayer.addTo(map);
 vardLayer.addTo(map);
+gymnLayer.addTo(map);
 
 // ── Räkna & uppdatera ─────────────────────────────────────────────────────────
 
 document.getElementById('n-polis').textContent = polisStationer.length;
 document.getElementById('n-brand').textContent = brandStationer.length;
 document.getElementById('n-vard').textContent  = vardCentraler.length;
+document.getElementById('n-gymn').textContent  = gymnasieSkolor.length;
 
 function updateCount() {
   let count = 0;
   if (document.getElementById('cb-polis').checked) count += polisStationer.length;
   if (document.getElementById('cb-brand').checked) count += brandStationer.length;
   if (document.getElementById('cb-vard').checked)  count += vardCentraler.length;
+  if (document.getElementById('cb-gymn').checked)  count += gymnasieSkolor.length;
   document.getElementById('visible-count').textContent = count;
 }
 
@@ -671,7 +823,14 @@ document.getElementById('cb-brand').addEventListener('change', e => {
   updateCount();
 });
 document.getElementById('cb-vard').addEventListener('change', e => {
-  if (e.target.checked) vardLayer.addTo(map); else map.removeLayer(vardLayer);
+  if (e.target.checked) vardLayer.addTo(map);
+gymnLayer.addTo(map); else map.removeLayer(vardLayer);
+  updateCount();
+});
+
+updateCount();
+document.getElementById('cb-gymn').addEventListener('change', e => {
+  if (e.target.checked) gymnLayer.addTo(map); else map.removeLayer(gymnLayer);
   updateCount();
 });
 
