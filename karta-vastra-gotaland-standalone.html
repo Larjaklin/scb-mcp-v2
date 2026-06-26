@@ -1398,6 +1398,11 @@ function makeIcon(color, emoji) {
 const polisIcon = makeIcon('#1a3a6b', '🚔');
 const brandIcon = makeIcon('#c0392b', '🚒');
 const vardIcon  = makeIcon('#27ae60', '🏥');
+const gymnIcon = L.divIcon({
+  className: '',
+  html: '<div style="width:14px;height:14px;border-radius:3px;background:#8e44ad;border:2px solid #5b2c6f;"></div>',
+  iconSize: [14,14], iconAnchor: [7,7], popupAnchor: [0,-8]
+});
 
 // ── Lager ─────────────────────────────────────────────────────────────────────
 
@@ -1429,11 +1434,6 @@ const gymnLayer  = L.layerGroup();
       const dlng = item.p.lng - other.p.lng;
       if (Math.sqrt(dlat*dlat + dlng*dlng) < THRESH) cluster.push(j);
     });
-const gymnIcon = L.divIcon({
-  className: '',
-  html: '<div style="width:14px;height:14px;border-radius:3px;background:#8e44ad;border:2px solid #5b2c6f;"></div>',
-  iconSize: [14,14], iconAnchor: [7,7], popupAnchor: [0,-8]
-});
     if (cluster.length > 1) {
       const step = (2 * Math.PI) / cluster.length;
       cluster.forEach((idx, k) => {
