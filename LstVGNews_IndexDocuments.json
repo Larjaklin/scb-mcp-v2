@@ -11,13 +11,75 @@
     },
     {
       "parameters": {
-        "jsCode": "// Lägg dina styrande dokument här som textblock.\n// Varje objekt = ett dokument eller kapitel.\n// source = dokumentnamn som visas i mailen under 'Notera särskilt'.\n//\n// Tips: chunka långa dokument i avsnitt om ~500 ord för bättre träffsäkerhet.\n\nconst documents = [\n  {\n    source: \"Länsstyrelseinstruktionen (SFS 2017:868)\",\n    content: \"Länsstyrelsen ska verka för att nationella mål får genomslag i länet samtidigt som hänsyn tas till regionala förhållanden och förutsättningar. Länsstyrelsen ska utifrån ett statligt helhetsperspektiv arbeta sektorsövergripande och inom myndighetens ansvarsområde samordna olika samhällsintressen och statliga myndigheters insatser.\"\n  },\n  {\n    source: \"Regleringsbrev 2026 — Länsstyrelsen Västra Götaland\",\n    content: \"Klistra in relevant text från regleringsbrevet här.\"\n  },\n  {\n    source: \"Regional utvecklingsstrategi VG2030\",\n    content: \"Klistra in relevant text från VG2030 här.\"\n  },\n  {\n    source: \"Handlingsplan civilt försvar 2024–2026\",\n    content: \"Klistra in relevant text från handlingsplanen här.\"\n  }\n];\n\n// Chunka varje dokument i block om max 500 ord\nconst CHUNK_SIZE = 500;\nconst chunks = [];\n\ndocuments.forEach(doc => {\n  const words = doc.content.split(/\\s+/);\n  for (let i = 0; i < words.length; i += CHUNK_SIZE) {\n    chunks.push({\n      source: doc.source,\n      content: words.slice(i, i + CHUNK_SIZE).join(' '),\n    });\n  }\n});\n\nreturn chunks.map(c => ({ json: c }));"
+        "operation": "search",
+        "queryString": "='FOLDER_ID' in parents and trashed = false",
+        "returnAll": true,
+        "options": {
+          "fields": "id, name, mimeType"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [224, 0],
+      "id": "22222222-2222-2222-2222-222222222222",
+      "name": "List Files in Drive Folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "GOOGLE_DRIVE_CREDENTIAL_ID",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "text/plain",
+              "sheetsToFormat": "text/csv",
+              "slidesToFormat": "text/plain"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [448, 0],
+      "id": "33333333-3333-3333-3333-333333333333",
+      "name": "Download File",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "GOOGLE_DRIVE_CREDENTIAL_ID",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [672, 0],
+      "id": "44444444-4444-4444-4444-444444444444",
+      "name": "Extract Text from File"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Chunka dokumenttexten i block om ~500 ord.\n// Filnamnet används som 'source' i databasen och syns i mailen.\nconst text = $json.text || $json.data || '';\nconst source = $('List Files in Drive Folder').item.json.name || 'Okänt dokument';\n\nconst CHUNK_SIZE = 500;\nconst words = text.split(/\\s+/).filter(w => w.length > 0);\nconst chunks = [];\n\nfor (let i = 0; i < words.length; i += CHUNK_SIZE) {\n  const content = words.slice(i, i + CHUNK_SIZE).join(' ');\n  if (content.trim().length > 50) {\n    chunks.push({ source, content, chunkIndex: chunks.length });\n  }\n}\n\nreturn chunks.map(c => ({ json: c }));"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [224, 0],
-      "id": "22222222-2222-2222-2222-222222222222",
-      "name": "Load Documents"
+      "position": [896, 0],
+      "id": "55555555-5555-5555-5555-555555555555",
+      "name": "Chunk Text"
     },
     {
       "parameters": {
@@ -32,47 +94,62 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [448, 0],
-      "id": "33333333-3333-3333-3333-333333333333",
+      "position": [1120, 0],
+      "id": "66666666-6666-6666-6666-666666666666",
       "name": "Embed Chunk",
       "credentials": {
-        "httpHeaderAuth": { "id": "W50gIWCCSWBnYxEG", "name": "Berget AI account" }
+        "httpHeaderAuth": {
+          "id": "W50gIWCCSWBnYxEG",
+          "name": "Berget AI account"
+        }
       }
     },
     {
       "parameters": {
-        "jsCode": "// Kombinera embedding med chunk-metadata från Load Documents\nconst embedding = $json.data[0].embedding;\nconst source = $('Load Documents').item.json.source;\nconst content = $('Load Documents').item.json.content;\n\nreturn [{ json: { embedding, source, content } }];"
+        "jsCode": "const embedding = $json.data[0].embedding;\nconst source = $('Chunk Text').item.json.source;\nconst content = $('Chunk Text').item.json.content;\n\nreturn [{ json: { embedding, source, content } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [672, 0],
-      "id": "44444444-4444-4444-4444-444444444444",
+      "position": [1344, 0],
+      "id": "77777777-7777-7777-7777-777777777777",
       "name": "Merge Embedding + Chunk"
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Skapa tabellen om den inte finns (kör en gång)\nCREATE TABLE IF NOT EXISTS document_chunks (\n  id SERIAL PRIMARY KEY,\n  source TEXT NOT NULL,\n  content TEXT NOT NULL,\n  embedding VECTOR(1536)\n);\n\n-- Infoga chunk\nINSERT INTO document_chunks (source, content, embedding)\nVALUES ($1, $2, $3::vector)\nON CONFLICT DO NOTHING;",
+        "query": "CREATE TABLE IF NOT EXISTS document_chunks (\n  id SERIAL PRIMARY KEY,\n  source TEXT NOT NULL,\n  content TEXT NOT NULL,\n  embedding VECTOR(1536),\n  indexed_at TIMESTAMPTZ DEFAULT NOW()\n);\n\nCREATE INDEX IF NOT EXISTS document_chunks_embedding_idx\n  ON document_chunks USING ivfflat (embedding vector_cosine_ops);\n\nINSERT INTO document_chunks (source, content, embedding)\nVALUES ($1, $2, $3::vector);",
         "options": {
           "queryParams": "={{ [$json.source, $json.content, JSON.stringify($json.embedding)] }}"
         }
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [896, 0],
-      "id": "55555555-5555-5555-5555-555555555555",
+      "position": [1568, 0],
+      "id": "88888888-8888-8888-8888-888888888888",
       "name": "Insert into pgvector",
       "credentials": {
-        "postgres": { "id": "65dqdVjkI29IUYff", "name": "Postgres NIP" }
+        "postgres": {
+          "id": "65dqdVjkI29IUYff",
+          "name": "Postgres NIP"
+        }
       }
     }
   ],
   "pinData": {},
   "connections": {
     "Manual Trigger": {
-      "main": [[{ "node": "Load Documents", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "List Files in Drive Folder", "type": "main", "index": 0 }]]
     },
-    "Load Documents": {
+    "List Files in Drive Folder": {
+      "main": [[{ "node": "Download File", "type": "main", "index": 0 }]]
+    },
+    "Download File": {
+      "main": [[{ "node": "Extract Text from File", "type": "main", "index": 0 }]]
+    },
+    "Extract Text from File": {
+      "main": [[{ "node": "Chunk Text", "type": "main", "index": 0 }]]
+    },
+    "Chunk Text": {
       "main": [[{ "node": "Embed Chunk", "type": "main", "index": 0 }]]
     },
     "Embed Chunk": {
@@ -88,7 +165,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "c2d39827-9127-4105-b809-d1f5bd633595",
+  "versionId": "c2d39827-9127-4105-b809-d1f5bd633596",
   "meta": {
     "templateCredsSetupCompleted": false,
     "instanceId": "547b251db7fb6562d2ccb9e6ec2410a45beee1e073d3aedd34a1294d1d8605c3"
