@@ -40,7 +40,7 @@
             "pub_date",
             "title_original",
             "summary_original",
-            "url",
+            "content_original",
             "country",
             "trusted",
             "categories",
