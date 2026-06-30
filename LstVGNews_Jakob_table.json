@@ -1,0 +1,212 @@
+{
+  "name": "LstVGNews_Jakob",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "articles",
+          "mode": "list",
+          "cachedResultName": "articles"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "pub_date",
+              "condition": ">",
+              "value": "={{ $now.minus(24, \"hours\") }}"
+            },
+            {
+              "column": "relevance",
+              "condition": "!=",
+              "value": "LOW"
+            }
+          ]
+        },
+        "sort": {
+          "values": []
+        },
+        "options": {
+          "outputColumns": [
+            "pub_date",
+            "title_original",
+            "summary_original",
+            "content_original",
+            "country",
+            "trusted",
+            "categories",
+            "entities",
+            "locations",
+            "collection",
+            "created_at"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        0
+      ],
+      "id": "d5e6d3c5-00ac-41f7-9d1a-b9d535e593c4",
+      "name": "Select rows from a table",
+      "credentials": {
+        "postgres": {
+          "id": "65dqdVjkI29IUYff",
+          "name": "Postgres NIP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatModel": "google/gemma-4-31B-it",
+        "chatMessages": {
+          "values": [
+            {
+              "content": "=Analysera följande artiklar och presentera resultatet som en HTML-tabell med exakt dessa kolumner:\n1. Artikel – artikelns titel\n2. URL – direktlänk till artikeln\n3. Notera särskilt – kortfattad notering om något specifikt i artikeln som är värt att uppmärksamma\n4. Varför relevant? (Kortfattat!) – en kort mening om varför artikeln är relevant för Länsstyrelsen Västra Götaland\n5. Kategori – välj EN av följande kategorier som bäst passar artikeln: Regional utveckling / Civilt försvar / Demokrati / Förvaltningspolitik / Ledningens kalendrar / Generella omvärldshändelser\n\nHär är artiklarna:\n\n{{ $json.data.toJsonString() }}\n\nOutputen ska vara korrekt formaterad HTML, utan inledande text eller kodmarkeringar – bara ren markup. Inled med en <h2>-rubrik \"Nyhetssammanfattning {{ $now.toLocaleString() }}\" följt av tabellen. Tabellen ska ha en header-rad med kolumnnamnen och en rad per artikel. Använd svenska genomgående."
+            }
+          ]
+        },
+        "chatOptions": {}
+      },
+      "type": "n8n-nodes-berget-mk.bergetAi",
+      "typeVersion": 1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "48179341-099f-401d-964e-7650a4ae6bfb",
+      "name": "Berget AI",
+      "credentials": {
+        "bergetAiApi": {
+          "id": "W50gIWCCSWBnYxEG",
+          "name": "Berget AI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "6aa43e2d-bffa-48b0-92ab-828453562d3f",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "fromEmail": "newsletter@walkstripe.cc",
+        "toEmail": "jakob.lindahl@lansstyrelsen.se",
+        "subject": "LstVGNews - 24h High",
+        "html": "={{ $json.choices[0].message.content }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        896,
+        0
+      ],
+      "id": "c86d6af5-4777-4a80-bbc6-0f6302378a9a",
+      "name": "Send an Email",
+      "webhookId": "16979224-c229-4a85-aa81-028764079c58",
+      "credentials": {
+        "smtp": {
+          "id": "IHaYdY967oiT0Yw4",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "49ee1e8f-2013-4372-9553-af04a6010ed5",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Berget AI": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Berget AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a0b29827-9127-4105-b809-d1f5bd633593",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "547b251db7fb6562d2ccb9e6ec2410a45beee1e073d3aedd34a1294d1d8605c3"
+  },
+  "id": "uxnQiXfrHgg0dvBv",
+  "tags": []
+}
