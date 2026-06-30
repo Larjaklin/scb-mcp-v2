@@ -1,0 +1,236 @@
+{
+  "name": "LstVGNews_Jakob_RAG",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [0, 0],
+      "id": "49ee1e8f-2013-4372-9553-af04a6010ed5",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": { "__rl": true, "mode": "list", "value": "public" },
+        "table": {
+          "__rl": true,
+          "value": "articles",
+          "mode": "list",
+          "cachedResultName": "articles"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            { "column": "pub_date", "condition": ">", "value": "={{ $now.minus(24, \"hours\") }}" },
+            { "column": "relevance", "condition": "!=", "value": "LOW" }
+          ]
+        },
+        "sort": { "values": [] },
+        "options": {
+          "outputColumns": [
+            "pub_date",
+            "title_original",
+            "summary_original",
+            "url",
+            "country",
+            "trusted",
+            "categories",
+            "entities",
+            "locations",
+            "collection"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [224, 0],
+      "id": "d5e6d3c5-00ac-41f7-9d1a-b9d535e593c4",
+      "name": "Select Articles",
+      "credentials": {
+        "postgres": { "id": "65dqdVjkI29IUYff", "name": "Postgres NIP" }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [448, 0],
+      "id": "6aa43e2d-bffa-48b0-92ab-828453562d3f",
+      "name": "Aggregate Articles"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Bygg en komprimerad söksträng av alla artikelrubriker och sammanfattningar\n// för att skicka som embedding-query mot pgvector.\nconst articles = $json.data || [];\n\nconst queryText = articles\n  .map(a => `${a.title_original || ''}: ${(a.summary_original || '').substring(0, 200)}`)\n  .join(' | ');\n\n// Spara artikeldata för senare noder\nreturn [{ json: { queryText, articles } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [672, 0],
+      "id": "b1c2d3e4-f5a6-7890-bcde-f12345678901",
+      "name": "Build RAG Query"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.berget.ai/v1/embeddings",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"text-embedding-3-small\",\n  \"input\": {{ JSON.stringify($json.queryText) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [896, 0],
+      "id": "c2d3e4f5-a6b7-8901-cdef-234567890123",
+      "name": "Get Embedding",
+      "credentials": {
+        "httpHeaderAuth": { "id": "W50gIWCCSWBnYxEG", "name": "Berget AI account" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Plocka ut embedding-vektorn från API-svaret\n// och kombinera med artikeldata från föregående nod.\nconst embedding = $json.data[0].embedding;\nconst articles = $('Build RAG Query').first().json.articles;\n\nreturn [{ json: { embedding, articles } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 0],
+      "id": "d3e4f5a6-b7c8-9012-defa-345678901234",
+      "name": "Extract Embedding"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT content, source, 1 - (embedding <=> $1::vector) AS similarity\nFROM document_chunks\nORDER BY embedding <=> $1::vector\nLIMIT 10;",
+        "options": {
+          "queryParams": "={{ JSON.stringify($json.embedding) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [1344, 0],
+      "id": "e4f5a6b7-c8d9-0123-efab-456789012345",
+      "name": "Search Styrande Dokument",
+      "credentials": {
+        "postgres": { "id": "65dqdVjkI29IUYff", "name": "Postgres NIP" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Slå samman sökresultaten till en läsbar kontext-sträng\n// och hämta artikeldata från tidigare nod.\nconst docResults = $input.all();\nconst articles = $('Extract Embedding').first().json.articles;\n\nconst docContext = docResults\n  .map(item => `[${item.json.source}]\\n${item.json.content}`)\n  .join('\\n\\n---\\n\\n');\n\nreturn [{ json: { docContext, articles } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1568, 0],
+      "id": "f5a6b7c8-d9e0-1234-fabc-567890123456",
+      "name": "Prepare Context"
+    },
+    {
+      "parameters": {
+        "chatModel": "google/gemma-4-31B-it",
+        "chatMessages": {
+          "values": [
+            {
+              "content": "=Du är en omvärldsanalytiker för Länsstyrelsen Västra Götaland. Din uppgift är att analysera nyhetsartiklar i förhållande till länsstyrelsens styrande dokument och producera en strukturerad HTML-tabell.\n\n## STYRANDE DOKUMENT (relevanta avsnitt)\n{{ $json.docContext }}\n\n---\n\n## NYHETSARTIKLAR ATT ANALYSERA\n{{ JSON.stringify($json.articles) }}\n\n---\n\n## INSTRUKTION\nProducera ENBART en <table>-tagg (ingen rubrik, ingen inledande text) med en <thead>-rad och en <tbody> med en <tr> per artikel.\n\nKolumner:\n1. **Artikel** – artikelns titel\n2. **URL** – direktlänk\n3. **Notera särskilt** – konkret observation förankrad i styrande dokument (citera kort vilket dokument/avsnitt om möjligt)\n4. **Varför relevant?** – en mening om kopplingen till länsstyrelsens uppdrag\n5. **Kategori** – välj EN: Regional utveckling / Civilt försvar / Demokrati / Förvaltningspolitik / Ledningens kalendrar / Generella omvärldshändelser\n\nAnvänd svenska genomgående."
+            }
+          ]
+        },
+        "chatOptions": {}
+      },
+      "type": "n8n-nodes-berget-mk.bergetAi",
+      "typeVersion": 1,
+      "position": [1792, 0],
+      "id": "a6b7c8d9-e0f1-2345-abcd-678901234567",
+      "name": "Berget AI Analysis",
+      "credentials": {
+        "bergetAiApi": { "id": "W50gIWCCSWBnYxEG", "name": "Berget AI account" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate HTML Email — LstVGNews RAG-version med LST grafisk profil.\n// Tar AI-genererad <table> och wrappar i stilat mailskal.\nconst tableHtml = $json.choices[0].message.content || '';\nconst now = new Date().toLocaleString('sv-SE');\n\nconst C = {\n  primary: '#004B87', gold: '#E4B363', bg: '#EAEEF2', white: '#FFFFFF',\n  text: '#1a1a1a', textLight: 'rgba(255,255,255,0.55)', border: '#E0E0E0',\n  headerCell: '#003D72',\n};\n\nconst tableStyle = `border-collapse:collapse;width:100%;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:${C.text};`;\nconst thStyle = `background-color:${C.headerCell};color:#FFFFFF;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:10px 14px;text-align:left;border:none;`;\nconst tdStyle = `padding:10px 14px;vertical-align:top;border-bottom:1px solid ${C.border};font-family:Arial,Helvetica,sans-serif;font-size:13px;color:${C.text};line-height:1.5;`;\n\nlet styledTable = tableHtml\n  .replace(/<table[^>]*>/gi, `<table style=\"${tableStyle}\">`)\n  .replace(/<th([^>]*)>/gi, `<th$1 style=\"${thStyle}\">`)\n  .replace(/<td([^>]*)>/gi, `<td$1 style=\"${tdStyle}\">`);\n\nconst html = `<!DOCTYPE html>\n<html lang=\"sv\" xmlns=\"http://www.w3.org/1999/xhtml\">\n<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"><title>LstVGNews</title></head>\n<body style=\"margin:0;padding:0;background-color:${C.bg};font-family:Arial,Helvetica,sans-serif;\">\n<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"background-color:${C.bg};\">\n  <tr><td align=\"center\" style=\"padding:24px 12px;\">\n  <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"700\" style=\"max-width:700px;width:100%;background-color:${C.white};\">\n    <tr><td style=\"background-color:${C.primary};padding:0;\">\n      <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n        <tr><td style=\"height:4px;background-color:${C.gold};font-size:1px;line-height:1px;\">&nbsp;</td></tr>\n      </table>\n      <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n        <tr><td style=\"padding:28px 36px 6px 36px;\"><span style=\"font-family:Georgia,serif;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:${C.gold};\">Länsstyrelsen Västra Götaland</span></td></tr>\n        <tr><td style=\"padding:0 36px 8px 36px;\"><span style=\"font-family:Georgia,serif;font-size:26px;font-weight:bold;color:#FFFFFF;\">LstVGNews</span><span style=\"font-family:Georgia,serif;font-size:26px;color:rgba(255,255,255,0.45);\"> — </span><span style=\"font-family:Georgia,serif;font-size:26px;font-style:italic;color:rgba(255,255,255,0.8);\">24h High</span></td></tr>\n        <tr><td style=\"padding:0 36px 24px 36px;\"><span style=\"font-family:Arial,sans-serif;font-size:13px;color:${C.textLight};\">${now}</span></td></tr>\n      </table>\n    </td></tr>\n    <tr><td style=\"padding:32px 36px;\">${styledTable}</td></tr>\n    <tr><td style=\"background-color:${C.primary};padding:0;\">\n      <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n        <tr><td style=\"height:3px;background-color:${C.gold};font-size:1px;line-height:1px;\">&nbsp;</td></tr>\n      </table>\n      <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n        <tr><td style=\"padding:18px 36px;\"><p style=\"font-family:Arial,sans-serif;font-size:11px;color:rgba(255,255,255,0.5);margin:0;\">Analys förankrad i styrande dokument via RAG. Verifiera mot primärkälla före vidare spridning. &nbsp;·&nbsp; LstVGNews · ${now}</p></td></tr>\n      </table>\n    </td></tr>\n  </table>\n  </td></tr>\n</table>\n</body></html>`;\n\nreturn [{ json: { html, subject: `LstVGNews - 24h High ${new Date().toLocaleDateString('sv-SE')}` } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2016, 0],
+      "id": "b7c8d9e0-f1a2-3456-bcde-789012345678",
+      "name": "Generate HTML Email"
+    },
+    {
+      "parameters": {
+        "fromEmail": "newsletter@walkstripe.cc",
+        "toEmail": "jakob.lindahl@lansstyrelsen.se",
+        "subject": "={{ $json.subject }}",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [2240, 0],
+      "id": "c86d6af5-4777-4a80-bbc6-0f6302378a9a",
+      "name": "Send an Email",
+      "webhookId": "16979224-c229-4a85-aa81-028764079c58",
+      "credentials": {
+        "smtp": { "id": "IHaYdY967oiT0Yw4", "name": "SMTP account" }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [[{ "node": "Select Articles", "type": "main", "index": 0 }]]
+    },
+    "Select Articles": {
+      "main": [[{ "node": "Aggregate Articles", "type": "main", "index": 0 }]]
+    },
+    "Aggregate Articles": {
+      "main": [[{ "node": "Build RAG Query", "type": "main", "index": 0 }]]
+    },
+    "Build RAG Query": {
+      "main": [[{ "node": "Get Embedding", "type": "main", "index": 0 }]]
+    },
+    "Get Embedding": {
+      "main": [[{ "node": "Extract Embedding", "type": "main", "index": 0 }]]
+    },
+    "Extract Embedding": {
+      "main": [[{ "node": "Search Styrande Dokument", "type": "main", "index": 0 }]]
+    },
+    "Search Styrande Dokument": {
+      "main": [[{ "node": "Prepare Context", "type": "main", "index": 0 }]]
+    },
+    "Prepare Context": {
+      "main": [[{ "node": "Berget AI Analysis", "type": "main", "index": 0 }]]
+    },
+    "Berget AI Analysis": {
+      "main": [[{ "node": "Generate HTML Email", "type": "main", "index": 0 }]]
+    },
+    "Generate HTML Email": {
+      "main": [[{ "node": "Send an Email", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b1c29827-9127-4105-b809-d1f5bd633594",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "547b251db7fb6562d2ccb9e6ec2410a45beee1e073d3aedd34a1294d1d8605c3"
+  },
+  "id": "vxnQiXfrHgg0dvBw",
+  "tags": []
+}

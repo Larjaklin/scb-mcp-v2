@@ -1,0 +1,98 @@
+{
+  "name": "LstVGNews_IndexDocuments",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "id": "11111111-1111-1111-1111-111111111111",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lägg dina styrande dokument här som textblock.\n// Varje objekt = ett dokument eller kapitel.\n// source = dokumentnamn som visas i mailen under 'Notera särskilt'.\n//\n// Tips: chunka långa dokument i avsnitt om ~500 ord för bättre träffsäkerhet.\n\nconst documents = [\n  {\n    source: \"Länsstyrelseinstruktionen (SFS 2017:868)\",\n    content: \"Länsstyrelsen ska verka för att nationella mål får genomslag i länet samtidigt som hänsyn tas till regionala förhållanden och förutsättningar. Länsstyrelsen ska utifrån ett statligt helhetsperspektiv arbeta sektorsövergripande och inom myndighetens ansvarsområde samordna olika samhällsintressen och statliga myndigheters insatser.\"\n  },\n  {\n    source: \"Regleringsbrev 2026 — Länsstyrelsen Västra Götaland\",\n    content: \"Klistra in relevant text från regleringsbrevet här.\"\n  },\n  {\n    source: \"Regional utvecklingsstrategi VG2030\",\n    content: \"Klistra in relevant text från VG2030 här.\"\n  },\n  {\n    source: \"Handlingsplan civilt försvar 2024–2026\",\n    content: \"Klistra in relevant text från handlingsplanen här.\"\n  }\n];\n\n// Chunka varje dokument i block om max 500 ord\nconst CHUNK_SIZE = 500;\nconst chunks = [];\n\ndocuments.forEach(doc => {\n  const words = doc.content.split(/\\s+/);\n  for (let i = 0; i < words.length; i += CHUNK_SIZE) {\n    chunks.push({\n      source: doc.source,\n      content: words.slice(i, i + CHUNK_SIZE).join(' '),\n    });\n  }\n});\n\nreturn chunks.map(c => ({ json: c }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [224, 0],
+      "id": "22222222-2222-2222-2222-222222222222",
+      "name": "Load Documents"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.berget.ai/v1/embeddings",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"text-embedding-3-small\",\n  \"input\": {{ JSON.stringify($json.content) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [448, 0],
+      "id": "33333333-3333-3333-3333-333333333333",
+      "name": "Embed Chunk",
+      "credentials": {
+        "httpHeaderAuth": { "id": "W50gIWCCSWBnYxEG", "name": "Berget AI account" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Kombinera embedding med chunk-metadata från Load Documents\nconst embedding = $json.data[0].embedding;\nconst source = $('Load Documents').item.json.source;\nconst content = $('Load Documents').item.json.content;\n\nreturn [{ json: { embedding, source, content } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [672, 0],
+      "id": "44444444-4444-4444-4444-444444444444",
+      "name": "Merge Embedding + Chunk"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Skapa tabellen om den inte finns (kör en gång)\nCREATE TABLE IF NOT EXISTS document_chunks (\n  id SERIAL PRIMARY KEY,\n  source TEXT NOT NULL,\n  content TEXT NOT NULL,\n  embedding VECTOR(1536)\n);\n\n-- Infoga chunk\nINSERT INTO document_chunks (source, content, embedding)\nVALUES ($1, $2, $3::vector)\nON CONFLICT DO NOTHING;",
+        "options": {
+          "queryParams": "={{ [$json.source, $json.content, JSON.stringify($json.embedding)] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [896, 0],
+      "id": "55555555-5555-5555-5555-555555555555",
+      "name": "Insert into pgvector",
+      "credentials": {
+        "postgres": { "id": "65dqdVjkI29IUYff", "name": "Postgres NIP" }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{ "node": "Load Documents", "type": "main", "index": 0 }]]
+    },
+    "Load Documents": {
+      "main": [[{ "node": "Embed Chunk", "type": "main", "index": 0 }]]
+    },
+    "Embed Chunk": {
+      "main": [[{ "node": "Merge Embedding + Chunk", "type": "main", "index": 0 }]]
+    },
+    "Merge Embedding + Chunk": {
+      "main": [[{ "node": "Insert into pgvector", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "c2d39827-9127-4105-b809-d1f5bd633595",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "547b251db7fb6562d2ccb9e6ec2410a45beee1e073d3aedd34a1294d1d8605c3"
+  },
+  "id": "wxnQiXfrHgg0dvBx",
+  "tags": []
+}
