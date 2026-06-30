@@ -70,7 +70,7 @@
         "chatMessages": {
           "values": [
             {
-              "content": "=Analysera följande artiklar och presentera resultatet som en HTML-tabell med exakt dessa kolumner:\n1. Artikel – artikelns titel\n2. URL – direktlänk till artikeln\n3. Notera särskilt – kortfattad notering om något specifikt i artikeln som är värt att uppmärksamma\n4. Varför relevant? (Kortfattat!) – en kort mening om varför artikeln är relevant för Länsstyrelsen Västra Götaland\n5. Kategori – välj EN av följande kategorier som bäst passar artikeln: Regional utveckling / Civilt försvar / Demokrati / Förvaltningspolitik / Ledningens kalendrar / Generella omvärldshändelser\n\nHär är artiklarna:\n\n{{ $json.data.toJsonString() }}\n\nOutputen ska vara korrekt formaterad HTML, utan inledande text eller kodmarkeringar – bara ren markup. Inled med en <h2>-rubrik \"Nyhetssammanfattning {{ $now.toLocaleString() }}\" följt av tabellen. Tabellen ska ha en header-rad med kolumnnamnen och en rad per artikel. Använd svenska genomgående."
+              "content": "=Analysera följande artiklar och presentera resultatet som en HTML-tabell med exakt dessa kolumner:\n1. Artikel – artikelns titel\n2. URL – direktlänk till artikeln\n3. Notera särskilt – kortfattad notering om något specifikt i artikeln som är värt att uppmärksamma\n4. Varför relevant? (Kortfattat!) – en kort mening om varför artikeln är relevant för Länsstyrelsen Västra Götaland\n5. Kategori – välj EN av följande kategorier som bäst passar artikeln: Regional utveckling / Civilt försvar / Demokrati / Förvaltningspolitik / Ledningens kalendrar / Generella omvärldshändelser\n\nHär är artiklarna:\n\n{{ $json.data.toJsonString() }}\n\nOutputen ska vara ENBART en <table>-tagg med tillhörande rader – ingen rubrik, ingen inledande text, inga kodmarkeringar. Tabellen ska ha en <thead>-rad med kolumnnamnen och en <tbody> med en <tr> per artikel. Använd svenska genomgående."
             }
           ]
         },
@@ -107,16 +107,30 @@
     },
     {
       "parameters": {
+        "jsCode": "// Generate HTML Email — LstVGNews tabellformat med LST grafisk profil.\n// Tar AI-genererad <table> och wrappar den i ett stilat mailskal.\n// Returnerar { html, subject }.\n\nconst tableHtml = $json.choices[0].message.content || '';\nconst now = new Date().toLocaleString('sv-SE');\n\nconst C = {\n  primary: '#004B87',\n  gold: '#E4B363',\n  bg: '#EAEEF2',\n  white: '#FFFFFF',\n  text: '#1a1a1a',\n  textLight: 'rgba(255,255,255,0.55)',\n  border: '#E0E0E0',\n  headerCell: '#003D72',\n  rowAlt: '#F0F4F8',\n};\n\nconst tableStyle = `\n  border-collapse: collapse;\n  width: 100%;\n  font-family: Arial, Helvetica, sans-serif;\n  font-size: 13px;\n  color: ${C.text};\n`;\n\nconst thStyle = `\n  background-color: ${C.headerCell};\n  color: #FFFFFF;\n  font-family: Arial, Helvetica, sans-serif;\n  font-size: 11px;\n  letter-spacing: 1px;\n  text-transform: uppercase;\n  padding: 10px 14px;\n  text-align: left;\n  border: none;\n`;\n\nconst tdStyle = `\n  padding: 10px 14px;\n  vertical-align: top;\n  border-bottom: 1px solid ${C.border};\n  font-family: Arial, Helvetica, sans-serif;\n  font-size: 13px;\n  color: ${C.text};\n  line-height: 1.5;\n`;\n\n// Injicera inline-stilar i AI:ns tabell-markup.\nlet styledTable = tableHtml\n  .replace(/<table[^>]*>/gi, `<table style=\"${tableStyle.replace(/\\n\\s*/g, ' ').trim()}\">`)\n  .replace(/<th([^>]*)>/gi, `<th$1 style=\"${thStyle.replace(/\\n\\s*/g, ' ').trim()}\">`)\n  .replace(/<td([^>]*)>/gi, `<td$1 style=\"${tdStyle.replace(/\\n\\s*/g, ' ').trim()}\">`);\n\nconst html = `<!DOCTYPE html>\n<html lang=\"sv\" xmlns=\"http://www.w3.org/1999/xhtml\">\n<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"><title>LstVGNews</title></head>\n<body style=\"margin:0;padding:0;background-color:${C.bg};font-family:Arial,Helvetica,sans-serif;\">\n<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"background-color:${C.bg};\">\n  <tr><td align=\"center\" style=\"padding:24px 12px;\">\n  <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"700\" style=\"max-width:700px;width:100%;background-color:${C.white};\">\n\n    <!-- HEADER -->\n    <tr><td style=\"background-color:${C.primary};padding:0;\">\n      <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n        <tr><td style=\"height:4px;background-color:${C.gold};font-size:1px;line-height:1px;\">&nbsp;</td></tr>\n      </table>\n      <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n        <tr><td style=\"padding:28px 36px 6px 36px;\">\n          <span style=\"font-family:Georgia,serif;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:${C.gold};\">Länsstyrelsen Västra Götaland</span>\n        </td></tr>\n        <tr><td style=\"padding:0 36px 8px 36px;\">\n          <span style=\"font-family:Georgia,serif;font-size:26px;font-weight:bold;color:${C.white};\">LstVGNews</span>\n          <span style=\"font-family:Georgia,serif;font-size:26px;color:rgba(255,255,255,0.45);\"> — </span>\n          <span style=\"font-family:Georgia,serif;font-size:26px;font-style:italic;color:rgba(255,255,255,0.8);\">24h High</span>\n        </td></tr>\n        <tr><td style=\"padding:0 36px 24px 36px;\">\n          <span style=\"font-family:Arial,sans-serif;font-size:13px;color:${C.textLight};\">${now}</span>\n        </td></tr>\n      </table>\n    </td></tr>\n\n    <!-- TABELL -->\n    <tr><td style=\"padding:32px 36px;\">\n      ${styledTable}\n    </td></tr>\n\n    <!-- FOOTER -->\n    <tr><td style=\"background-color:${C.primary};padding:0;\">\n      <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n        <tr><td style=\"height:3px;background-color:${C.gold};font-size:1px;line-height:1px;\">&nbsp;</td></tr>\n      </table>\n      <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n        <tr><td style=\"padding:18px 36px;\">\n          <p style=\"font-family:Arial,sans-serif;font-size:11px;color:rgba(255,255,255,0.5);margin:0;\">AI-genererad sammanfattning — verifiera mot primärkälla före vidare spridning. &nbsp;·&nbsp; LstVGNews · ${now}</p>\n        </td></tr>\n      </table>\n    </td></tr>\n\n  </table>\n  </td></tr>\n</table>\n</body>\n</html>`;\n\nreturn [{ json: { html, subject: `LstVGNews - 24h High ${new Date().toLocaleDateString('sv-SE')}` } }];",
+        "notice": ""
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        0
+      ],
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Generate HTML Email"
+    },
+    {
+      "parameters": {
         "fromEmail": "newsletter@walkstripe.cc",
         "toEmail": "jakob.lindahl@lansstyrelsen.se",
-        "subject": "LstVGNews - 24h High",
-        "html": "={{ $json.choices[0].message.content }}",
+        "subject": "={{ $json.subject }}",
+        "html": "={{ $json.html }}",
         "options": {}
       },
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
-        896,
+        1120,
         0
       ],
       "id": "c86d6af5-4777-4a80-bbc6-0f6302378a9a",
@@ -166,7 +180,7 @@
       "main": [
         [
           {
-            "node": "Send an Email",
+            "node": "Generate HTML Email",
             "type": "main",
             "index": 0
           }
@@ -178,6 +192,17 @@
         [
           {
             "node": "Berget AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate HTML Email": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
             "type": "main",
             "index": 0
           }
