@@ -1,0 +1,97 @@
+{
+  "name": "LstVGNews_AdminDokument",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "lst-dokument",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "name": "Webhook",
+      "webhookId": "lst-admin-dokument-0001"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  source AS dokument,\n  COUNT(*) AS antal_chunks,\n  TO_CHAR(MIN(indexed_at), 'YYYY-MM-DD HH24:MI') AS indexerad\nFROM document_chunks\nGROUP BY source\nORDER BY MIN(indexed_at) DESC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [224, 0],
+      "id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+      "name": "List Indexed Documents",
+      "credentials": {
+        "postgres": {
+          "id": "65dqdVjkI29IUYff",
+          "name": "Postgres NIP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [448, 0],
+      "id": "cccccccc-cccc-cccc-cccc-cccccccccccc",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "const docs = $json.data || [];\nconst now = new Date().toLocaleString('sv-SE');\n\nconst C = {\n  primary: '#004B87',\n  gold: '#E4B363',\n  bg: '#EAEEF2',\n  white: '#FFFFFF',\n  border: '#E0E0E0',\n  headerCell: '#003D72',\n  text: '#1a1a1a',\n  rowAlt: '#F0F4F8',\n};\n\nconst rows = docs.length === 0\n  ? `<tr><td colspan=\"3\" style=\"padding:20px;text-align:center;font-family:Arial,sans-serif;font-size:14px;color:#999;font-style:italic;\">Inga dokument indexerade ännu.</td></tr>`\n  : docs.map((d, i) => `\n    <tr style=\"background-color:${i % 2 === 0 ? C.white : C.rowAlt};\">\n      <td style=\"padding:12px 16px;font-family:Arial,sans-serif;font-size:14px;color:${C.text};border-bottom:1px solid ${C.border};\">${d.dokument}</td>\n      <td style=\"padding:12px 16px;font-family:Arial,sans-serif;font-size:14px;color:${C.text};border-bottom:1px solid ${C.border};text-align:center;\">${d.antal_chunks}</td>\n      <td style=\"padding:12px 16px;font-family:Arial,sans-serif;font-size:14px;color:${C.text};border-bottom:1px solid ${C.border};\">${d.indexerad}</td>\n    </tr>`).join('');\n\nconst deleteFormUrl = '[URL till LstVGNews_DeleteDocument-flödet]';\n\nconst html = `<!DOCTYPE html>\n<html lang=\"sv\">\n<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"><title>LstVGNews — Indexerade dokument</title></head>\n<body style=\"margin:0;padding:24px;background-color:${C.bg};font-family:Arial,Helvetica,sans-serif;\">\n  <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"max-width:700px;width:100%;margin:0 auto;background-color:${C.white};\">\n    <tr><td style=\"background-color:${C.primary};padding:0;\">\n      <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n        <tr><td style=\"height:4px;background-color:${C.gold};font-size:1px;\"></td></tr>\n      </table>\n      <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n        <tr><td style=\"padding:24px 32px 6px 32px;\"><span style=\"font-family:Georgia,serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:${C.gold};\">Länsstyrelsen Västra Götaland</span></td></tr>\n        <tr><td style=\"padding:0 32px 20px 32px;\"><span style=\"font-family:Georgia,serif;font-size:22px;font-weight:bold;color:#fff;\">LstVGNews</span><span style=\"font-family:Georgia,serif;font-size:22px;color:rgba(255,255,255,0.45);\"> — </span><span style=\"font-family:Georgia,serif;font-size:22px;font-style:italic;color:rgba(255,255,255,0.8);\">Indexerade dokument</span></td></tr>\n      </table>\n    </td></tr>\n    <tr><td style=\"padding:28px 32px 8px 32px;\">\n      <p style=\"font-family:Arial,sans-serif;font-size:13px;color:#777;margin:0 0 20px 0;\">Hämtad: ${now} &nbsp;·&nbsp; ${docs.length} dokument indexerade</p>\n      <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"border-collapse:collapse;\">\n        <thead>\n          <tr>\n            <th style=\"background-color:${C.headerCell};color:#fff;font-family:Arial,sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:10px 16px;text-align:left;\">Dokument</th>\n            <th style=\"background-color:${C.headerCell};color:#fff;font-family:Arial,sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:10px 16px;text-align:center;\">Chunks</th>\n            <th style=\"background-color:${C.headerCell};color:#fff;font-family:Arial,sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:10px 16px;text-align:left;\">Indexerad</th>\n          </tr>\n        </thead>\n        <tbody>${rows}</tbody>\n      </table>\n    </td></tr>\n    <tr><td style=\"padding:20px 32px 28px 32px;\">\n      <p style=\"font-family:Arial,sans-serif;font-size:13px;color:#555;margin:0 0 8px 0;\">Vill du ta bort ett dokument från indexet? Kör SQL:</p>\n      <code style=\"display:block;background:#F0F4F8;padding:12px 16px;font-size:12px;color:#003D72;border-left:3px solid ${C.gold};\">DELETE FROM document_chunks WHERE source = 'Dokumentnamn';</code>\n    </td></tr>\n    <tr><td style=\"background-color:${C.primary};padding:0;\">\n      <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n        <tr><td style=\"height:3px;background-color:${C.gold};font-size:1px;\"></td></tr>\n      </table>\n      <table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n        <tr><td style=\"padding:14px 32px;\"><p style=\"font-family:Arial,sans-serif;font-size:11px;color:rgba(255,255,255,0.5);margin:0;\">LstVGNews Admin · ${now}</p></td></tr>\n      </table>\n    </td></tr>\n  </table>\n</body></html>`;\n\nreturn [{ json: { html } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [672, 0],
+      "id": "dddddddd-dddd-dddd-dddd-dddddddddddd",
+      "name": "Generate Admin Page"
+    },
+    {
+      "parameters": {
+        "respondWith": "html",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [896, 0],
+      "id": "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
+      "name": "Return HTML Page"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "List Indexed Documents", "type": "main", "index": 0 }]]
+    },
+    "List Indexed Documents": {
+      "main": [[{ "node": "Aggregate", "type": "main", "index": 0 }]]
+    },
+    "Aggregate": {
+      "main": [[{ "node": "Generate Admin Page", "type": "main", "index": 0 }]]
+    },
+    "Generate Admin Page": {
+      "main": [[{ "node": "Return HTML Page", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d3e49827-9127-4105-b809-d1f5bd633598",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "547b251db7fb6562d2ccb9e6ec2410a45beee1e073d3aedd34a1294d1d8605c3"
+  },
+  "id": "yxnQiXfrHgg0dvBy",
+  "tags": []
+}
