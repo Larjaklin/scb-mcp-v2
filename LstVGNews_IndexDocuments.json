@@ -2,63 +2,35 @@
   "name": "LstVGNews_IndexDocuments",
   "nodes": [
     {
-      "parameters": {},
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [0, 0],
-      "id": "11111111-1111-1111-1111-111111111111",
-      "name": "Manual Trigger"
-    },
-    {
       "parameters": {
-        "operation": "search",
-        "queryString": "='FOLDER_ID' in parents and trashed = false",
-        "returnAll": true,
-        "options": {
-          "fields": "id, name, mimeType"
-        }
-      },
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 3,
-      "position": [224, 0],
-      "id": "22222222-2222-2222-2222-222222222222",
-      "name": "List Files in Drive Folder",
-      "credentials": {
-        "googleDriveOAuth2Api": {
-          "id": "GOOGLE_DRIVE_CREDENTIAL_ID",
-          "name": "Google Drive account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "download",
-        "fileId": {
-          "__rl": true,
-          "value": "={{ $json.id }}",
-          "mode": "id"
+        "formTitle": "Indexera styrande dokument",
+        "formDescription": "Ladda upp ett PDF- eller Word-dokument för att indexera det i LstVGNews RAG-databasen.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Dokumentnamn (visas i nyhetsmailen)",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Dokument",
+              "fieldType": "file",
+              "requiredField": true,
+              "acceptFileTypes": ".pdf,.doc,.docx,.txt"
+            }
+          ]
         },
         "options": {
-          "googleFileConversion": {
-            "conversion": {
-              "docsToFormat": "text/plain",
-              "sheetsToFormat": "text/csv",
-              "slidesToFormat": "text/plain"
-            }
-          }
+          "respondWith": "text",
+          "responseText": "Dokumentet indexeras nu. Det kan ta någon minut."
         }
       },
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 3,
-      "position": [448, 0],
-      "id": "33333333-3333-3333-3333-333333333333",
-      "name": "Download File",
-      "credentials": {
-        "googleDriveOAuth2Api": {
-          "id": "GOOGLE_DRIVE_CREDENTIAL_ID",
-          "name": "Google Drive account"
-        }
-      }
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [0, 0],
+      "id": "11111111-1111-1111-1111-111111111111",
+      "name": "Upload Document Form",
+      "webhookId": "lst-index-form-0001"
     },
     {
       "parameters": {
@@ -67,17 +39,17 @@
       },
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1,
-      "position": [672, 0],
+      "position": [224, 0],
       "id": "44444444-4444-4444-4444-444444444444",
       "name": "Extract Text from File"
     },
     {
       "parameters": {
-        "jsCode": "// Chunka dokumenttexten i block om ~500 ord.\n// Filnamnet används som 'source' i databasen och syns i mailen.\nconst text = $json.text || $json.data || '';\nconst source = $('List Files in Drive Folder').item.json.name || 'Okänt dokument';\n\nconst CHUNK_SIZE = 500;\nconst words = text.split(/\\s+/).filter(w => w.length > 0);\nconst chunks = [];\n\nfor (let i = 0; i < words.length; i += CHUNK_SIZE) {\n  const content = words.slice(i, i + CHUNK_SIZE).join(' ');\n  if (content.trim().length > 50) {\n    chunks.push({ source, content, chunkIndex: chunks.length });\n  }\n}\n\nreturn chunks.map(c => ({ json: c }));"
+        "jsCode": "// Chunka dokumenttexten i block om ~500 ord.\n// Använder det namn användaren angav i formuläret som source-etikett.\nconst text = $json.text || '';\nconst source = $('Upload Document Form').first().json['Dokumentnamn (visas i nyhetsmailen)'] || 'Okänt dokument';\n\nconst CHUNK_SIZE = 500;\nconst words = text.split(/\\s+/).filter(w => w.length > 0);\nconst chunks = [];\n\nfor (let i = 0; i < words.length; i += CHUNK_SIZE) {\n  const content = words.slice(i, i + CHUNK_SIZE).join(' ');\n  if (content.trim().length > 50) {\n    chunks.push({ source, content, chunkIndex: chunks.length });\n  }\n}\n\nreturn chunks.map(c => ({ json: c }));"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [896, 0],
+      "position": [448, 0],
       "id": "55555555-5555-5555-5555-555555555555",
       "name": "Chunk Text"
     },
@@ -94,7 +66,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1120, 0],
+      "position": [672, 0],
       "id": "66666666-6666-6666-6666-666666666666",
       "name": "Embed Chunk",
       "credentials": {
@@ -110,7 +82,7 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1344, 0],
+      "position": [896, 0],
       "id": "77777777-7777-7777-7777-777777777777",
       "name": "Merge Embedding + Chunk"
     },
@@ -124,7 +96,7 @@
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [1568, 0],
+      "position": [1120, 0],
       "id": "88888888-8888-8888-8888-888888888888",
       "name": "Insert into pgvector",
       "credentials": {
@@ -137,13 +109,7 @@
   ],
   "pinData": {},
   "connections": {
-    "Manual Trigger": {
-      "main": [[{ "node": "List Files in Drive Folder", "type": "main", "index": 0 }]]
-    },
-    "List Files in Drive Folder": {
-      "main": [[{ "node": "Download File", "type": "main", "index": 0 }]]
-    },
-    "Download File": {
+    "Upload Document Form": {
       "main": [[{ "node": "Extract Text from File", "type": "main", "index": 0 }]]
     },
     "Extract Text from File": {
@@ -165,7 +131,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "c2d39827-9127-4105-b809-d1f5bd633596",
+  "versionId": "c2d39827-9127-4105-b809-d1f5bd633597",
   "meta": {
     "templateCredsSetupCompleted": false,
     "instanceId": "547b251db7fb6562d2ccb9e6ec2410a45beee1e073d3aedd34a1294d1d8605c3"
