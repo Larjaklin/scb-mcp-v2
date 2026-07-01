@@ -1,0 +1,730 @@
+{
+  "name": "VG Dashboard — Datainsamling (v2)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 0 1 * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -896,
+        400
+      ],
+      "id": "d10e5aae-8801-41a0-a2b4-94f9fe851abc",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "vg_indikatorer",
+        "filterType": "string",
+        "filterString": "aktiv=eq.true"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        400
+      ],
+      "id": "fe491db1-b94f-4287-a7ba-45c3dfc8826b",
+      "name": "Get many rows",
+      "credentials": {
+        "supabaseApi": {
+          "id": "SsWd0yPdEcv4mgOZ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -448,
+        400
+      ],
+      "id": "a6d55f63-9475-4fce-a4fa-0107939b86bb",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.kalla }}",
+                    "rightValue": "SCB",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c438ba7e-f266-4288-a697-58dd3f77bdb3"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "SCB"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ac215c69-a467-4363-a103-11374cb8b4d8",
+                    "leftValue": "={{ $json.kalla }}",
+                    "rightValue": "Kolada",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Kolada"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5f7bcef9-d1a2-4e03-8119-de826af2eb80",
+                    "leftValue": "={{ $json.kalla }}",
+                    "rightValue": "AF",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AF"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -224,
+        112
+      ],
+      "id": "a3453afe-1697-425f-93e7-d62d43bfb892",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://scb-mcp-v2.onrender.com/query",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"table_id\": \"{{ $json.tabell_id }}\",\n  \"variable_filters\": \"{{ $json.filter }}\"\n}",
+        "options": {
+          "timeout": 150000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        0,
+        416
+      ],
+      "id": "2804616b-175e-4502-92d7-7147bb5e58cf",
+      "name": "SCB API"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7db18954-547d-404c-9448-1378f5bcc270",
+              "leftValue": "={{ $('Loop Over Items').first().json.kpi }}",
+              "rightValue": "sysselsatta_naringsgren",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        416
+      ],
+      "id": "8003fc59-a827-4fe7-95d6-1740922b139e",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Code-nod: Normalisera SCB JSON-stat2 till smal form för Supabase\n// Hanterar godtyckligt antal dimensioner (Region, Kon, SNI2007, Tid, etc.)\n\nconst data = $input.first().json;\n\nconst ids = data.id;\nconst sizes = data.size;\nconst dims = data.dimension;\nconst values = data.value;\n\nconst dimCodes = ids.map(dimId => {\n  const cat = dims[dimId].category.index;\n  return Object.keys(cat).sort((a, b) => cat[a] - cat[b]);\n});\n\nconst total = sizes.reduce((a, b) => a * b, 1);\nconst rows = [];\n\nfor (let flatIdx = 0; flatIdx < total; flatIdx++) {\n  if (values[flatIdx] === null || values[flatIdx] === undefined) continue;\n\n  let remainder = flatIdx;\n  const coords = new Array(sizes.length);\n  for (let i = sizes.length - 1; i >= 0; i--) {\n    coords[i] = remainder % sizes[i];\n    remainder = Math.floor(remainder / sizes[i]);\n  }\n\n  const row = {};\n  ids.forEach((dimId, i) => { row[dimId] = dimCodes[i][coords[i]]; });\n  row.value = values[flatIdx];\n  rows.push(row);\n}\n\nconst kommunNamn = {\n  \"1401\":\"Härryda\",\"1402\":\"Partille\",\"1407\":\"Öckerö\",\"1415\":\"Stenungsund\",\"1419\":\"Tjörn\",\n  \"1421\":\"Orust\",\"1427\":\"Sotenäs\",\"1430\":\"Munkedal\",\"1435\":\"Tanum\",\"1438\":\"Dals-Ed\",\n  \"1439\":\"Färgelanda\",\"1440\":\"Ale\",\"1441\":\"Lerum\",\"1442\":\"Vårgårda\",\"1443\":\"Bollebygd\",\n  \"1444\":\"Grästorp\",\"1445\":\"Essunga\",\"1446\":\"Karlsborg\",\"1447\":\"Gullspång\",\"1452\":\"Tranemo\",\n  \"1460\":\"Bengtsfors\",\"1461\":\"Mellerud\",\"1462\":\"Lilla Edet\",\"1463\":\"Mark\",\"1465\":\"Svenljunga\",\n  \"1466\":\"Herrljunga\",\"1470\":\"Vara\",\"1471\":\"Götene\",\"1472\":\"Tibro\",\"1473\":\"Töreboda\",\n  \"1480\":\"Göteborg\",\"1481\":\"Mölndal\",\"1482\":\"Kungälv\",\"1484\":\"Lysekil\",\"1485\":\"Uddevalla\",\n  \"1486\":\"Strömstad\",\"1487\":\"Vänersborg\",\"1488\":\"Trollhättan\",\"1489\":\"Alingsås\",\"1490\":\"Borås\",\n  \"1491\":\"Ulricehamn\",\"1492\":\"Åmål\",\"1493\":\"Mariestad\",\"1494\":\"Lidköping\",\"1495\":\"Skara\",\n  \"1496\":\"Skövde\",\"1497\":\"Hjo\",\"1498\":\"Tidaholm\",\"1499\":\"Falköping\"\n};\n\nconst konLabel = { \"1\": \"man\", \"2\": \"kvinna\", \"1+2\": \"totalt\" };\n\nconst output = rows.map(r => ({\n  json: {\n    kommun_kod:  r.Region,\n    kommun_namn: kommunNamn[r.Region] || r.Region,\n    kpi:         \"sysselsatta_naringsgren\",\n    bransch:     r.SNI2007 || \"alla\",\n    kon:         konLabel[r.Kon] || r.Kon || \"totalt\",\n    ar:          parseInt(r.Tid, 10),\n    manad:       null,\n    varde:       r.value,\n    enhet:       \"antal\",\n    kalla:       \"SCB\"\n  }\n}));\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        400
+      ],
+      "id": "2249c94a-de79-470f-a18f-c44777a2b014",
+      "name": "Normalisera SCB - Sysselsatta"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Hämta SCB-svaret (JSON-stat2)\nconst raw = $input.first().json;\nconst data = raw.body ? JSON.parse(raw.body) : raw;\n\n// Kommuner (VG) + Län (hela Sverige) — lägg till fler vid behov\nconst geografi = {\n  \"1401\":\"Härryda\",\"1402\":\"Partille\",\"1407\":\"Öckerö\",\"1415\":\"Stenungsund\",\n  \"1419\":\"Tjörn\",\"1421\":\"Orust\",\"1427\":\"Sotenäs\",\"1430\":\"Munkedal\",\n  \"1435\":\"Tanum\",\"1438\":\"Dals-Ed\",\"1439\":\"Färgelanda\",\"1440\":\"Ale\",\n  \"1441\":\"Lerum\",\"1442\":\"Vårgårda\",\"1443\":\"Bollebygd\",\"1444\":\"Grästorp\",\n  \"1445\":\"Essunga\",\"1446\":\"Karlsborg\",\"1447\":\"Gullspång\",\"1452\":\"Tranemo\",\n  \"1460\":\"Bengtsfors\",\"1461\":\"Mellerud\",\"1462\":\"Lilla Edet\",\"1463\":\"Mark\",\n  \"1465\":\"Svenljunga\",\"1466\":\"Herrljunga\",\"1470\":\"Vara\",\"1471\":\"Götene\",\n  \"1472\":\"Tibro\",\"1473\":\"Töreboda\",\"1480\":\"Göteborg\",\"1481\":\"Mölndal\",\n  \"1482\":\"Kungälv\",\"1484\":\"Lysekil\",\"1485\":\"Uddevalla\",\"1486\":\"Strömstad\",\n  \"1487\":\"Vänersborg\",\"1488\":\"Trollhättan\",\"1489\":\"Alingsås\",\"1490\":\"Borås\",\n  \"1491\":\"Ulricehamn\",\"1492\":\"Åmål\",\"1493\":\"Mariestad\",\"1494\":\"Lidköping\",\n  \"1495\":\"Skara\",\"1496\":\"Skövde\",\"1497\":\"Hjo\",\"1498\":\"Tidaholm\",\"1499\":\"Falköping\",\n  \"01\":\"Stockholms län\",\"03\":\"Uppsala län\",\"04\":\"Södermanlands län\",\n  \"05\":\"Östergötlands län\",\"06\":\"Jönköpings län\",\"07\":\"Kronobergs län\",\n  \"08\":\"Kalmar län\",\"09\":\"Gotlands län\",\"10\":\"Blekinge län\",\n  \"12\":\"Skåne län\",\"13\":\"Hallands län\",\"14\":\"Västra Götalands län\",\n  \"17\":\"Värmlands län\",\"18\":\"Örebro län\",\"19\":\"Västmanlands län\",\n  \"20\":\"Dalarnas län\",\"21\":\"Gävleborgs län\",\"22\":\"Västernorrlands län\",\n  \"23\":\"Jämtlands län\",\"24\":\"Västerbottens län\",\"25\":\"Norrbottens län\"\n};\n\nconst indikator = $('Loop Over Items').first().json;\nconst kpi   = indikator.kpi;\nconst enhet = indikator.enhet;\nconst kalla = indikator.kalla;\n\nconst dimIds     = data.id;\nconst sizes      = data.size;\nconst dimensions = data.dimension;\nconst values     = data.value;\n\nfunction getSortedCodes(dimId) {\n  const cat = dimensions[dimId].category;\n  const idx = cat.index;\n  return Object.keys(idx).sort((a, b) => idx[a] - idx[b]);\n}\n\nconst regionCodes = getSortedCodes(\"Region\");\nconst tidCodes    = getSortedCodes(\"Tid\");\nconst tidCount    = tidCodes.length;\nconst regionCount = regionCodes.length;\n\nconst regionPos = dimIds.indexOf(\"Region\");\nconst tidPos    = dimIds.indexOf(\"Tid\");\n\nfunction getStride(pos) {\n  let stride = 1;\n  for (let i = pos + 1; i < dimIds.length; i++) stride *= sizes[i];\n  return stride;\n}\nconst regionStride = getStride(regionPos);\nconst tidStride    = getStride(tidPos);\n\nconst rows = [];\nfor (let ri = 0; ri < regionCount; ri++) {\n  for (let ti = 0; ti < tidCount; ti++) {\n    const flatIdx = ri * regionStride + ti * tidStride;\n    const varde   = values[flatIdx];\n    if (varde === null || varde === undefined) continue;\n    rows.push({\n      json: {\n        kommun_kod:  regionCodes[ri],\n        kommun_namn: geografi[regionCodes[ri]] || regionCodes[ri],\n        ar:          parseInt(tidCodes[ti], 10),\n        kalla:       kalla,\n        kpi:         kpi,\n        bransch:     \"alla\",\n        kon:         \"totalt\",\n        varde:       varde,\n        enhet:       enhet\n      }\n    });\n  }\n}\nreturn rows;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        624
+      ],
+      "id": "7c23f275-fbbc-4a67-a71b-3d6eea0f37f3",
+      "name": "Normalisera SCB"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        672,
+        400
+      ],
+      "id": "b469dc28-01d7-4827-9ace-f2f3b337417c",
+      "name": "Aggregate Sysselsatta"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        672,
+        624
+      ],
+      "id": "115e6897-adf5-4185-b7be-e7faac75c739",
+      "name": "Aggregate SCB BRP"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://xqeyxlonarwcqykbemsg.supabase.co/rest/v1/vg_kommundata?on_conflict=kommun_kod,kpi,ar,bransch,kon",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "apikey",
+              "value": "sb_publishable_f_plG5zfiWjL9jWco0T-ww_D1Bd7Caq"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer sb_publishable_f_plG5zfiWjL9jWco0T-ww_D1Bd7Caq"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal,resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        512
+      ],
+      "id": "ad735f21-f89a-4dd1-87f5-498bcd2dc08d",
+      "name": "Supabas SCB"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://scb-mcp-v2.onrender.com/kolada",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"kpi_id\": \"{{ $json.kolada_id }}\",\n  \"year\": 2024\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6448356d-5162-43fd-89df-e99d9c63b18a",
+      "name": "Kolada API"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json;\nconst values = raw.values || [];\n\nconst kommunNamn = {\n  \"1401\":\"Härryda\",\"1402\":\"Partille\",\"1407\":\"Öckerö\",\"1415\":\"Stenungsund\",\n  \"1419\":\"Tjörn\",\"1421\":\"Orust\",\"1427\":\"Sotenäs\",\"1430\":\"Munkedal\",\n  \"1435\":\"Tanum\",\"1438\":\"Dals-Ed\",\"1439\":\"Färgelanda\",\"1440\":\"Ale\",\n  \"1441\":\"Lerum\",\"1442\":\"Vårgårda\",\"1443\":\"Bollebygd\",\"1444\":\"Grästorp\",\n  \"1445\":\"Essunga\",\"1446\":\"Karlsborg\",\"1447\":\"Gullspång\",\"1452\":\"Tranemo\",\n  \"1460\":\"Bengtsfors\",\"1461\":\"Mellerud\",\"1462\":\"Lilla Edet\",\"1463\":\"Mark\",\n  \"1465\":\"Svenljunga\",\"1466\":\"Herrljunga\",\"1470\":\"Vara\",\"1471\":\"Götene\",\n  \"1472\":\"Tibro\",\"1473\":\"Töreboda\",\"1480\":\"Göteborg\",\"1481\":\"Mölndal\",\n  \"1482\":\"Kungälv\",\"1484\":\"Lysekil\",\"1485\":\"Uddevalla\",\"1486\":\"Strömstad\",\n  \"1487\":\"Vänersborg\",\"1488\":\"Trollhättan\",\"1489\":\"Alingsås\",\"1490\":\"Borås\",\n  \"1491\":\"Ulricehamn\",\"1492\":\"Åmål\",\"1493\":\"Mariestad\",\"1494\":\"Lidköping\",\n  \"1495\":\"Skara\",\"1496\":\"Skövde\",\"1497\":\"Hjo\",\"1498\":\"Tidaholm\",\"1499\":\"Falköping\"\n};\n\nconst indikator = $('Loop Over Items').first().json;\nconst kpi   = indikator.kpi;\nconst enhet = indikator.enhet;\nconst kalla = indikator.kalla;\n\nconst senastPerKommun = {};\nfor (const item of values) {\n  const munId  = item.municipality;\n  const period = item.period;\n  if (!senastPerKommun[munId] || period > senastPerKommun[munId].period) {\n    senastPerKommun[munId] = item;\n  }\n}\n\nconst rows = [];\nfor (const [munId, item] of Object.entries(senastPerKommun)) {\n  const varde = item.values?.[0]?.value;\n  if (varde === null || varde === undefined) continue;\n  rows.push({\n    json: {\n      kommun_kod:  munId,\n      kommun_namn: kommunNamn[munId] || munId,\n      ar:          parseInt(item.period, 10),\n      kalla:       kalla,\n      kpi:         kpi,\n      bransch:     \"alla\",\n      kon:         \"totalt\",\n      varde:       varde,\n      enhet:       enhet\n    }\n  });\n}\nreturn rows;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "be441111-4297-4857-971f-315f3b4443ec",
+      "name": "Normalisera Kolada"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "32faf860-2b9d-48c0-9d0c-2e3d42557459",
+      "name": "Aggregate Kolada"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://xqeyxlonarwcqykbemsg.supabase.co/rest/v1/vg_kommundata?on_conflict=kommun_kod,kpi,ar,bransch,kon",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "apikey",
+              "value": "sb_publishable_f_plG5zfiWjL9jWco0T-ww_D1Bd7Caq"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer sb_publishable_f_plG5zfiWjL9jWco0T-ww_D1Bd7Caq"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal,resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        0
+      ],
+      "id": "384a0651-4cbf-44f4-97f7-7e239db28d32",
+      "name": "Supabas Kolada"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://scb-mcp-v2.onrender.com/af",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "kpi",
+              "value": "={{ $json.af_id }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        0,
+        192
+      ],
+      "id": "76444b05-f6ab-4bae-bac0-b5e5ea90147e",
+      "name": "AF API"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalisera AF-svaret (redan platt JSON från /af-endpointen i scb-mcp-v2)\nconst raw = $input.first().json;\nconst values = raw.values || [];\n\nconst indikator = $('Loop Over Items').first().json;\nconst kpi   = indikator.kpi;\nconst kalla = indikator.kalla;\nconst enhet = indikator.enhet;\n\nconst rows = [];\nfor (const item of values) {\n  if (item.value === null || item.value === undefined) continue;\n\n  const [arStr, manadStr] = String(item.period || \"\").split(\"-\");\n  const ar    = parseInt(arStr, 10);\n  const manad = manadStr ? parseInt(manadStr, 10) : null;\n\n  rows.push({\n    json: {\n      kommun_kod:  item.kommun_kod,\n      kommun_namn: item.kommun_namn,\n      ar:          Number.isNaN(ar) ? null : ar,\n      manad:       manad,\n      kalla:       kalla,\n      kpi:         kpi,\n      bransch:     \"alla\",\n      kon:         \"totalt\",\n      varde:       item.value,\n      enhet:       item.enhet || enhet\n    }\n  });\n}\nreturn rows;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        192
+      ],
+      "id": "231b0979-a012-4674-b75e-7b38f6d75149",
+      "name": "Normalisera AF"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        448,
+        192
+      ],
+      "id": "d7b34837-2205-4ac4-bf4a-e7a8651e2dad",
+      "name": "Aggregate AF"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://xqeyxlonarwcqykbemsg.supabase.co/rest/v1/vg_kommundata?on_conflict=kommun_kod,kpi,ar,bransch,kon",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "apikey",
+              "value": "sb_publishable_f_plG5zfiWjL9jWco0T-ww_D1Bd7Caq"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer sb_publishable_f_plG5zfiWjL9jWco0T-ww_D1Bd7Caq"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal,resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        192
+      ],
+      "id": "96ba5a9a-385a-4809-971d-f06e04599d9b",
+      "name": "Supabas AF"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "SCB API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Kolada API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AF API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SCB API": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Normalisera SCB - Sysselsatta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normalisera SCB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalisera SCB - Sysselsatta": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Sysselsatta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalisera SCB": {
+      "main": [
+        [
+          {
+            "node": "Aggregate SCB BRP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Sysselsatta": {
+      "main": [
+        [
+          {
+            "node": "Supabas SCB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate SCB BRP": {
+      "main": [
+        [
+          {
+            "node": "Supabas SCB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabas SCB": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kolada API": {
+      "main": [
+        [
+          {
+            "node": "Normalisera Kolada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalisera Kolada": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Kolada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Kolada": {
+      "main": [
+        [
+          {
+            "node": "Supabas Kolada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabas Kolada": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AF API": {
+      "main": [
+        [
+          {
+            "node": "Normalisera AF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalisera AF": {
+      "main": [
+        [
+          {
+            "node": "Aggregate AF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate AF": {
+      "main": [
+        [
+          {
+            "node": "Supabas AF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabas AF": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "790a621a-f62f-4cf2-bb9c-aae6021f3a52",
+  "meta": {
+    "instanceId": "72f0a3d7f6d35f0ba2915537d0c69470df1e30b14cd2b5f4a4991cd2b1e99e88"
+  },
+  "id": "BmWDaOuCCg202VwN",
+  "tags": []
+}
