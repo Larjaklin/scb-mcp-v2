@@ -1,1 +1,3 @@
 .claude/worktrees/
+.env
+__pycache__/
