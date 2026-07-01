@@ -94,29 +94,45 @@ mcp = FastMCP(
 # ---------------------------------------------------------------------------
 
 
+SCB_TIMEOUT = 90.0
+SCB_MAX_RETRIES = 2  # extraförsök vid timeout, utöver första försöket
+
+
 async def scb_get(path: str, params: dict | None = None) -> dict:
-    """Gör ett asynkront GET-anrop mot SCB PxWebApi v2."""
+    """Gör ett asynkront GET-anrop mot SCB PxWebApi v2.
+
+    Breda frågor (många kommuner × näringsgrenar × kön × år) kan ta lång tid
+    på SCB:s sida, särskilt i kombination med Render-kallstart. Därför
+    används en högre timeout och ett par återförsök innan vi ger upp.
+    """
     url = f"{SCB_BASE_URL}/{path}"
     if params is None:
         params = {}
     params.setdefault("lang", DEFAULT_LANG)
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        try:
-            response = await client.get(url, params=params)
-            response.raise_for_status()
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            status = e.response.status_code
-            messages = {
-                400: "Felaktig förfrågan (400): Kontrollera variabelkoder och syntax.",
-                403: "Förbjudet (403): Frågan returnerar för många dataceller (max 150 000). Lägg till filter.",
-                404: "Hittades inte (404): Kontrollera tabell-ID.",
-                429: "För många anrop (429): Vänta några sekunder och försök igen.",
-            }
-            raise ValueError(messages.get(status, f"API-fel ({status}): {e.response.text[:200]}"))
-        except httpx.TimeoutException:
-            raise ValueError("Timeout: SCB-API:et svarade inte inom 30 sekunder.")
+    for attempt in range(SCB_MAX_RETRIES + 1):
+        async with httpx.AsyncClient(timeout=SCB_TIMEOUT) as client:
+            try:
+                response = await client.get(url, params=params)
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPStatusError as e:
+                status = e.response.status_code
+                messages = {
+                    400: "Felaktig förfrågan (400): Kontrollera variabelkoder och syntax.",
+                    403: "Förbjudet (403): Frågan returnerar för många dataceller (max 150 000). Lägg till filter.",
+                    404: "Hittades inte (404): Kontrollera tabell-ID.",
+                    429: "För många anrop (429): Vänta några sekunder och försök igen.",
+                }
+                raise ValueError(messages.get(status, f"API-fel ({status}): {e.response.text[:200]}"))
+            except httpx.TimeoutException:
+                if attempt == SCB_MAX_RETRIES:
+                    raise ValueError(
+                        f"Timeout: SCB-API:et svarade inte inom {SCB_TIMEOUT:.0f} sekunder "
+                        f"(efter {SCB_MAX_RETRIES + 1} försök). Frågan är troligen för bred "
+                        "— överväg att dela upp den (t.ex. färre år eller kommuner per anrop)."
+                    )
+                continue
 
 
 def _format_table_list(tables: list, total: int, page: int, page_size: int) -> str:
